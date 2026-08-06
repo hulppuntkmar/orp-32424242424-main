@@ -6,37 +6,46 @@ import {
 
 interface StaffPortalProps {
   licenses?: any[];
+  issuedLicenses?: any[];
   onUpdateLicense?: (updatedLicense: any) => void;
   onDeleteLicense?: (id: string) => void;
-  onCreateLicense?: (newLicense: any) => void;
+  onRemoveLicense?: (id: string) => void;
+  onAddLicense?: (newLicense: any) => void;
   staffMembers?: any[];
+  inventory?: any[];
+  onUpdateInventory?: (inv: any[]) => void;
+  aircraftList?: any[];
+  onUpdateAircraftList?: (list: any[]) => void;
 }
 
 export const StaffPortal: React.FC<StaffPortalProps> = ({
   licenses = [],
+  issuedLicenses = [],
   onUpdateLicense,
   onDeleteLicense,
-  onCreateLicense,
+  onRemoveLicense,
   staffMembers = []
 }) => {
   const [activeTab, setActiveTab] = useState<'register' | 'issue' | 'finances' | 'taxes' | 'bonuses' | 'settings'>('register');
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
 
-  // Lokale state voor brevetten
-  const [localLicenses, setLocalLicenses] = useState<any[]>(licenses);
+  // Combineer mogelijke props voor licenties
+  const allLicenses = licenses.length > 0 ? licenses : issuedLicenses;
   
-  // State voor bewerken
+  // Lokale state voor brevetten
+  const [localLicenses, setLocalLicenses] = useState<any[]>(allLicenses);
+  
+  // State voor inline bewerken
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ pilotName: '', bsn: '' });
 
   useEffect(() => {
-    if (licenses && licenses.length > 0) {
-      setLocalLicenses(licenses);
-    }
-  }, [licenses]);
+    const activeList = licenses.length > 0 ? licenses : issuedLicenses;
+    setLocalLicenses(activeList);
+  }, [licenses, issuedLicenses]);
 
-  // Start bewerken
+  // Start bewerken van een rij
   const handleStartEdit = (lic: any) => {
     setEditingId(lic.id);
     setEditForm({
@@ -51,7 +60,7 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
     setEditForm({ pilotName: '', bsn: '' });
   };
 
-  // Opslaan van wijzigingen (Naam & BSN)
+  // Opslaan van gewijzigde Naam & BSN
   const handleSaveEdit = (id: string) => {
     const updated = localLicenses.map(lic => {
       if (lic.id === id) {
@@ -80,13 +89,16 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
     if (window.confirm('Weet je zeker dat je dit brevet wilt verwijderen?')) {
       const filtered = localLicenses.filter(l => l.id !== id);
       setLocalLicenses(filtered);
+      
       if (onDeleteLicense) {
         onDeleteLicense(id);
+      } else if (onRemoveLicense) {
+        onRemoveLicense(id);
       }
     }
   };
 
-  // Zoek- en filterfunctionaliteit
+  // Zoek- en filterlogica
   const filteredLicenses = localLicenses.filter(lic => {
     const name = (lic.pilotName || lic.klant || '').toLowerCase();
     const bsn = (lic.bsn || '').toLowerCase();
@@ -100,8 +112,8 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
   });
 
   return (
-    <div className="space-y-6 text-slate-100 font-sans">
-      {/* BOVENSTE TABS */}
+    <div className="space-y-6 text-slate-100 font-sans max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* NAVIGATION TABS */}
       <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-4">
         <button
           onClick={() => setActiveTab('issue')}
@@ -170,10 +182,9 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
         </button>
       </div>
 
-      {/* DIPLOMA REGISTER OVERZICHT */}
+      {/* DIPLOMA REGISTER TAB */}
       {activeTab === 'register' && (
         <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 space-y-6">
-          {/* TITEL & FILTERS */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h2 className="text-xl font-bold text-white tracking-wide">Uitgegeven Vliegbrevetten</h2>
@@ -223,10 +234,10 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
 
                   return (
                     <tr key={lic.id} className="hover:bg-slate-800/30 transition">
-                      {/* ID */}
+                      {/* DIPLOMA ID */}
                       <td className="py-3.5 px-3 text-rose-500 font-bold">{lic.id}</td>
 
-                      {/* KLANT (PILOOT) */}
+                      {/* KLANT (PILOOT) - AANPASBAAR */}
                       <td className="py-3.5 px-3 text-white font-semibold">
                         {isEditing ? (
                           <input
@@ -240,7 +251,7 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
                         )}
                       </td>
 
-                      {/* BURGER ID / BSN */}
+                      {/* BSN - AANPASBAAR */}
                       <td className="py-3.5 px-3 text-amber-500 font-bold">
                         {isEditing ? (
                           <input
@@ -250,7 +261,7 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
                             className="bg-slate-950 border border-amber-500/80 rounded px-2 py-1 text-xs text-amber-400 focus:outline-none w-full"
                           />
                         ) : (
-                          lic.bsn?.startsWith('BSN-') ? lic.bsn : `BSN-${lic.bsn || 'NIL'}`
+                          lic.bsn?.toString().startsWith('BSN-') ? lic.bsn : `BSN-${lic.bsn || 'NIL'}`
                         )}
                       </td>
 
@@ -289,7 +300,7 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
                         </span>
                       </td>
 
-                      {/* ACTIE KNOPPEN (BEWERKEN, OPSLAAN, VERWIJDEREN) */}
+                      {/* ACTIES (BEWERKEN & VERWIJDEREN) */}
                       <td className="py-3.5 px-3 text-right">
                         {isEditing ? (
                           <div className="flex justify-end gap-1.5">
@@ -338,3 +349,5 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
     </div>
   );
 };
+
+export default StaffPortal;

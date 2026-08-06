@@ -117,6 +117,10 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
           <Plus size={14} /> 📜 BREVET UITGEVEN
         </button>
 
+<div className="bg-red-600 text-white font-bold text-center py-4 text-xl">
+  🚨 TEST: JE ZIET NU DE NIEUWE MAP! 🚨
+</div>
+
         <button
           onClick={() => setActiveTab('register')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-xs font-bold uppercase transition ${

@@ -4,6 +4,10 @@ import {
   Building2, TrendingUp, Settings 
 } from 'lucide-react';
 
+<div className="bg-red-600 text-white p-4 font-bold text-center">
+  TEST: BEWERKMODUS ACTIEF
+</div>
+
 interface StaffPortalProps {
   licenses?: any[];
   issuedLicenses?: any[];

@@ -1,189 +1,211 @@
-import React from "react";
-import { Award, CheckCircle2, MessageSquare } from "lucide-react";
-import { LICENSES } from "../data";
-import { License, PilotLogbook } from "../types";
+import React, { useState } from 'react';
+import { Award, Search, Plus, Edit2, Check, X, ShieldAlert } from 'lucide-react';
 
-export default function BrevettenHub() {
-  const [selectedLicense, setSelectedLicense] = React.useState<License | null>(LICENSES[0]);
+export const BrevettenHub: React.FC<any> = ({
+  licenses = [],
+  onUpdateLicense,
+  onCreateLicense
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<any>({});
+  const [isCreating, setIsCreating] = useState(false);
+  const [newForm, setNewForm] = useState({
+    pilotName: '',
+    bsn: '',
+    type: 'PPL',
+    issueDate: new Date().toISOString().split('T')[0],
+    expiryDate: '',
+    status: 'Actief'
+  });
+
+  const filteredLicenses = licenses.filter((lic: any) =>
+    lic.pilotName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lic.bsn?.includes(searchTerm) ||
+    lic.type?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleStartEdit = (lic: any) => {
+    setEditingId(lic.id);
+    setEditForm({ ...lic });
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId && editForm && onUpdateLicense) {
+      onUpdateLicense(editForm);
+      setEditingId(null);
+    }
+  };
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onCreateLicense) {
+      onCreateLicense(newForm);
+      setIsCreating(false);
+      setNewForm({
+        pilotName: '',
+        bsn: '',
+        type: 'PPL',
+        issueDate: new Date().toISOString().split('T')[0],
+        expiryDate: '',
+        status: 'Actief'
+      });
+    }
+  };
 
   return (
-    <div className="bg-slate-900 text-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header section */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-[#ea580c] font-mono text-xs tracking-widest uppercase font-bold px-3 py-1 bg-[#ea580c]/10 rounded-full border border-[#ea580c]/10">
-            Aviation Academy Oranjestad
-          </span>
-          <h1 className="font-display font-bold text-4xl mt-3 tracking-tight text-white">
-            Vliegbrevetten & Licenties
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Award className="text-amber-500" /> Vliegbrevetten Beheer
           </h1>
-          <p className="text-slate-400 mt-4 leading-relaxed text-sm">
-            Behaal uw officiële bevoegdheden voor Helikopters, Vliegtuig Klein of Vliegtuig Groot via onze vliegschool.
-          </p>
+          <p className="text-slate-400 text-sm">Beheer en pas aangemaakte vliegbrevetten aan.</p>
         </div>
+        <button
+          onClick={() => setIsCreating(!isCreating)}
+          className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition"
+        >
+          <Plus size={18} /> Nieuw Brevet Aanmaken
+        </button>
+      </div>
 
-        {/* Discord Ticket Callout Banner */}
-        <div className="mb-12 bg-slate-950 border border-[#ea580c]/30 rounded-3xl p-6 relative overflow-hidden shadow-xl">
-          <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-[#ea580c]" />
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pl-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#ea580c] animate-pulse" />
-                <h3 className="font-display font-bold text-base text-white uppercase tracking-wider">Hoe behaalt u uw vliegbrevet?</h3>
-              </div>
-              <p className="text-sm text-slate-300 font-light leading-relaxed max-w-4xl">
-                U kunt uw gewenste vliegbrevetten direct behalen door een <strong className="text-[#ea580c] font-semibold">ticket aan te maken in onze Discord server</strong>. Onze gecertificeerde vlieginstructeurs plannen dan een afspraak met u in. Na goedkeuring wordt uw brevet geautoriseerd.
-              </p>
-            </div>
-            <a
-              href="https://discord.gg/FACgeTSrAR" 
-              target="_blank" 
-              rel="noreferrer"
-              className="bg-[#ea580c] hover:bg-[#ea580c]/90 text-slate-950 px-6 py-3.5 rounded-xl font-mono text-xs font-black tracking-wider uppercase transition-all flex items-center gap-2 shrink-0 self-start md:self-center cursor-pointer shadow-lg shadow-[#ea580c]/10 text-decoration-none"
+      {/* Formulier voor nieuw brevet */}
+      {isCreating && (
+        <form onSubmit={handleCreate} className="bg-slate-800 border border-slate-700 p-4 rounded-xl space-y-4">
+          <h3 className="text-lg font-bold text-white">Nieuw Brevet Toevoegen</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input
+              type="text"
+              placeholder="Naam piloot"
+              required
+              value={newForm.pilotName}
+              onChange={e => setNewForm({ ...newForm, pilotName: e.target.value })}
+              className="bg-slate-900 border border-slate-700 text-white p-2 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="BSN (bijv. 123456789)"
+              required
+              value={newForm.bsn}
+              onChange={e => setNewForm({ ...newForm, bsn: e.target.value })}
+              className="bg-slate-900 border border-slate-700 text-white p-2 rounded-lg"
+            />
+            <input
+              type="text"
+              placeholder="Brevet Type (bijv. PPL, CPL)"
+              required
+              value={newForm.type}
+              onChange={e => setNewForm({ ...newForm, type: e.target.value })}
+              className="bg-slate-900 border border-slate-700 text-white p-2 rounded-lg"
+            />
+            <input
+              type="date"
+              required
+              value={newForm.expiryDate}
+              onChange={e => setNewForm({ ...newForm, expiryDate: e.target.value })}
+              className="bg-slate-900 border border-slate-700 text-white p-2 rounded-lg"
+            />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              type="button"
+              onClick={() => setIsCreating(false)}
+              className="px-4 py-2 bg-slate-700 text-white rounded-lg"
             >
-              <MessageSquare className="h-4 w-4" />
-              <span>Maak Discord Ticket</span>
-            </a>
+              Annuleren
+            </button>
+            <button type="submit" className="px-4 py-2 bg-amber-500 text-slate-950 font-bold rounded-lg">
+              Opslaan
+            </button>
           </div>
-        </div>
+        </form>
+      )}
 
-        {/* Dynamic Dual-Column: License Selector vs Detail Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Licenses list selector */}
-          <div className="lg:col-span-5 space-y-4">
-            <h3 className="text-xs font-mono text-slate-400 tracking-wider font-bold uppercase mb-2 block">Beschikbare Categorieën</h3>
-            {LICENSES.map((lic) => {
-              const isSelected = selectedLicense?.id === lic.id;
+      {/* Zoekbalk */}
+      <div className="relative">
+        <Search className="absolute left-3 top-3 text-slate-400" size={18} />
+        <input
+          type="text"
+          placeholder="Zoek op naam, BSN of brevet..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="w-full bg-slate-800 border border-slate-700 text-white pl-10 pr-4 py-2 rounded-xl focus:outline-none focus:border-amber-500"
+        />
+      </div>
 
-              return (
-                <div
-                  key={lic.id}
-                  onClick={() => setSelectedLicense(lic)}
-                  className={`p-6 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                    isSelected
-                      ? "bg-slate-950 border-[#ea580c] shadow-xl shadow-[#ea580c]/5 translate-x-1"
-                      : "bg-slate-950/40 border-slate-800/80 hover:border-slate-700"
-                  }`}
-                >
-                  <div className="flex justify-between items-start gap-4">
-                    <div>
-                      <span className="text-[10px] font-bold text-[#ea580c] tracking-wider font-mono uppercase">{lic.category}</span>
-                      <h4 className="font-display font-semibold text-base mt-0.5 text-white">{lic.name}</h4>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-slate-400 font-mono text-xs uppercase font-medium">PRIJS</p>
-                      <p className="text-white font-mono font-bold text-sm">€{lic.price.toLocaleString("nl-NL")}</p>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-400 mt-2.5 line-clamp-2 leading-relaxed">{lic.description}</p>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Right Column: In-depth Detail and Action Area */}
-          <div className="lg:col-span-7 bg-slate-950 border border-slate-800/80 rounded-3xl p-8 shadow-2xl">
-            {selectedLicense ? (
-              <div>
-                {/* Header detail */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-905 pb-6 mb-6">
-                  <div>
-                    <h2 className="font-display font-bold text-xl sm:text-2xl text-white">{selectedLicense.name}</h2>
-                    <p className="text-xs text-slate-400 mt-2 font-light leading-relaxed">{selectedLicense.description}</p>
-                  </div>
-                  <div className="mt-3 sm:mt-0 bg-slate-900 p-4 rounded-xl border border-slate-800 text-center sm:text-right shrink-0">
-                    <p className="text-[10px] text-slate-400 font-mono">BREVET PRIJS</p>
-                    <p className="text-xl font-bold text-[#ea580c] font-mono">€{selectedLicense.price.toLocaleString("nl-NL")}</p>
-                  </div>
-                </div>
-
-                {/* Steps to Obtain */}
+      {/* Overzicht en Bewerken van Brevetten */}
+      <div className="grid gap-4">
+        {filteredLicenses.map((lic: any) => (
+          <div key={lic.id} className="bg-slate-800/80 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            {editingId === lic.id ? (
+              /* --- BEWERK MODUS (Aanpassen Naam, BSN, Type) --- */
+              <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
                 <div>
-                  <h4 className="text-xs font-bold text-slate-300 font-mono uppercase tracking-wider mb-4">Stappenplan voor Behalen</h4>
-                  
-                  <div className="space-y-4">
-                    {/* Step 1: Discord contact */}
-                    <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <div className="max-w-md">
-                        <div className="flex items-center space-x-2.5">
-                          <span className="h-6 w-6 rounded-full bg-[#ea580c]/10 border border-[#ea580c]/20 text-[#ea580c] flex items-center justify-center font-mono text-xs font-bold">1</span>
-                          <h5 className="font-semibold text-sm text-white">Discord Ticket Openen (Afspraak maken)</h5>
-                        </div>
-                        <p className="text-xs text-slate-400 mt-1.5 pl-8.5">
-                          Meld u aan bij de instructeurs door een ticket te openen in onze Discord om uw afspraak en vliegles in te plannen.
-                        </p>
-                      </div>
-                      <a
-                        href="https://discord.gg/FACgeTSrAR"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="bg-slate-950 border border-slate-800 hover:border-[#ea580c] text-indigo-300 hover:text-white px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase shrink-0 transition-all text-center w-full sm:w-auto"
-                      >
-                        Maak Ticket
-                      </a>
-                    </div>
-
-                    {/* Step 2: Theory review */}
-                    <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800/60">
-                      <div className="flex items-center space-x-2.5">
-                        <span className="h-6 w-6 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono text-xs font-bold">2</span>
-                        <h5 className="font-semibold text-sm text-white">Theorie Uitleg</h5>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1.5 pl-8.5">
-                        Een erkend vlieginstructeur geeft u een gedegen en overzichtelijke uitleg over de theorie van de gekozen luchtvaarttak.
-                      </p>
-                    </div>
-
-                    {/* Step 3: Practical test flight */}
-                    <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800/60">
-                      <div className="flex items-center space-x-2.5">
-                        <span className="h-6 w-6 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono text-xs font-bold">3</span>
-                        <h5 className="font-semibold text-sm text-white">Test Vliegen (of je het kan)</h5>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1.5 pl-8.5">
-                        U voert samen met een instructeur een praktijktoets uit om te demonstreren dat u het luchtvoertuig onder controle heeft.
-                      </p>
-                    </div>
-
-                    {/* Step 4: Theory exam */}
-                    <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800/60">
-                      <div className="flex items-center space-x-2.5">
-                        <span className="h-6 w-6 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center font-mono text-xs font-bold">4</span>
-                        <h5 className="font-semibold text-sm text-white">Theorie Toets</h5>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1.5 pl-8.5">
-                        Een eindexamen over de theoretische beginselen om vliegvaardigheid officieel te bezegelen en te registreren.
-                      </p>
-                    </div>
-                  </div>
+                  <label className="text-xs text-slate-400 block">Naam Piloot</label>
+                  <input
+                    type="text"
+                    value={editForm.pilotName || ''}
+                    onChange={e => setEditForm({ ...editForm, pilotName: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-600 text-white p-2 rounded"
+                  />
                 </div>
-
-                {/* Call Action Button */}
-                <div className="mt-8 pt-6 border-t border-slate-900">
-                  <a
-                    href="https://discord.gg/FACgeTSrAR"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full bg-[#ea580c] hover:bg-[#ea580c]/90 text-slate-950 font-bold font-mono text-xs sm:text-sm py-4 rounded-xl uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#ea580c]/10 text-decoration-none"
-                  >
-                    <MessageSquare className="h-4.5 w-4.5" />
-                    <span>Direct Examen Aanvragen via Discord</span>
-                  </a>
+                <div>
+                  <label className="text-xs text-slate-400 block">BSN</label>
+                  <input
+                    type="text"
+                    value={editForm.bsn || ''}
+                    onChange={e => setEditForm({ ...editForm, bsn: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-600 text-white p-2 rounded"
+                  />
                 </div>
-
+                <div>
+                  <label className="text-xs text-slate-400 block">Type Brevet</label>
+                  <input
+                    type="text"
+                    value={editForm.type || ''}
+                    onChange={e => setEditForm({ ...editForm, type: e.target.value })}
+                    className="w-full bg-slate-900 border border-slate-600 text-white p-2 rounded"
+                  />
+                </div>
+                <div className="flex gap-2 md:col-span-3 justify-end mt-2">
+                  <button onClick={handleSaveEdit} className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded flex items-center gap-1">
+                    <Check size={16} /> Opslaan
+                  </button>
+                  <button onClick={() => setEditingId(null)} className="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded flex items-center gap-1">
+                    <X size={16} /> Annuleren
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="h-full flex flex-col justify-center items-center text-slate-500 py-12">
-                <Award className="h-12 w-12 text-slate-700 animate-pulse mb-4" />
-                <p className="text-sm">Selecteer een vliegbrevet aan de linkerkant om details weer te geven.</p>
-              </div>
+              /* --- NORMALE WEERGAVE --- */
+              <>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-white">{lic.pilotName}</h3>
+                    <span className="px-2 py-0.5 text-xs rounded bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">
+                      {lic.type}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <ShieldAlert size={12} className="text-slate-500" /> BSN: <strong className="text-slate-200">{lic.bsn || 'Niet ingevuld'}</strong>
+                    </span>
+                    {lic.expiryDate && <span>Verloopt op: {lic.expiryDate}</span>}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleStartEdit(lic)}
+                  className="bg-slate-700 hover:bg-slate-600 text-amber-400 px-3 py-2 rounded-lg flex items-center gap-2 transition"
+                >
+                  <Edit2 size={16} /> Bewerken
+                </button>
+              </>
             )}
           </div>
-        </div>
-
+        ))}
       </div>
     </div>
   );
-}
+};

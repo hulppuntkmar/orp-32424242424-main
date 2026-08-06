@@ -55,20 +55,28 @@ export default function App() {
         setEnrolledCourses(JSON.parse(storedCourses));
       }
       
-      // Issued Licenses ophalen uit localStorage
-      const storedLicenses = localStorage.getItem(LICENSES_KEY);
-      if (storedLicenses) {
-        try {
-          setIssuedLicenses(JSON.parse(storedLicenses));
-        } catch (e) {
-          setIssuedLicenses(DEFAULT_ISSUED_LICENSES);
-        }
+      // Automated operational reset: enforce clean slate (empty licenses & profit) for live operation
+      const opMigrationCompleted = localStorage.getItem("@luchtvaart_oranjestad_op_migration_v2");
+      let activeLicenses = DEFAULT_ISSUED_LICENSES;
+      if (!opMigrationCompleted) {
+        localStorage.setItem(LICENSES_KEY, JSON.stringify([]));
+        localStorage.setItem("@luchtvaart_oranjestad_op_migration_v2", "true");
+        activeLicenses = [];
       } else {
-        setIssuedLicenses(DEFAULT_ISSUED_LICENSES);
-        localStorage.setItem(LICENSES_KEY, JSON.stringify(DEFAULT_ISSUED_LICENSES));
+        const storedLicenses = localStorage.getItem(LICENSES_KEY);
+        if (storedLicenses) {
+          try {
+            activeLicenses = JSON.parse(storedLicenses);
+          } catch (e) {
+            activeLicenses = [];
+          }
+        } else {
+          activeLicenses = DEFAULT_ISSUED_LICENSES;
+          localStorage.setItem(LICENSES_KEY, JSON.stringify(DEFAULT_ISSUED_LICENSES));
+        }
       }
+      setIssuedLicenses(activeLicenses);
 
-      // Inventory ophalen
       const storedInventory = localStorage.getItem(INVENTORY_KEY);
       if (storedInventory) {
         setInventory(JSON.parse(storedInventory));
@@ -77,7 +85,6 @@ export default function App() {
         localStorage.setItem(INVENTORY_KEY, JSON.stringify(DEFAULT_INVENTORY));
       }
 
-      // Aircraft list ophalen
       const storedAircraft = localStorage.getItem(AIRCRAFT_LIST_KEY);
       if (storedAircraft) {
         setAircraftList(JSON.parse(storedAircraft));
@@ -119,42 +126,33 @@ export default function App() {
   };
 
   const handleAddLicense = (newLic: IssuedLicense) => {
-    setIssuedLicenses((prev) => {
-      const updatedLics = [newLic, ...prev];
-      try {
-        localStorage.setItem(LICENSES_KEY, JSON.stringify(updatedLics));
-      } catch (e) {
-        console.error("Error saving licenses:", e);
-      }
-      return updatedLics;
-    });
+    const updatedLics = [newLic, ...issuedLicenses];
+    setIssuedLicenses(updatedLics);
+    try {
+      localStorage.setItem(LICENSES_KEY, JSON.stringify(updatedLics));
+    } catch (e) {
+      console.error("Error saving licenses:", e);
+    }
   };
 
   const handleRemoveLicense = (licId: string) => {
-    setIssuedLicenses((prev) => {
-      const updatedLics = prev.filter(l => l.id !== licId);
-      try {
-        localStorage.setItem(LICENSES_KEY, JSON.stringify(updatedLics));
-      } catch (e) {
-        console.error("Error saving licenses:", e);
-      }
-      return updatedLics;
-    });
+    const updatedLics = issuedLicenses.filter(l => l.id !== licId);
+    setIssuedLicenses(updatedLics);
+    try {
+      localStorage.setItem(LICENSES_KEY, JSON.stringify(updatedLics));
+    } catch (e) {
+      console.error("Error saving licenses:", e);
+    }
   };
 
-  // VASTGEZETTE UPDATE FUNCTIE MET STATE CALLBACK EN LOCALSTORAGE
   const handleUpdateLicense = (updatedLic: IssuedLicense) => {
-    setIssuedLicenses((prevLicenses) => {
-      const updatedLics = prevLicenses.map((lic) =>
-        lic.id === updatedLic.id ? updatedLic : lic
-      );
-      try {
-        localStorage.setItem(LICENSES_KEY, JSON.stringify(updatedLics));
-      } catch (e) {
-        console.error("Error saving updated license:", e);
-      }
-      return updatedLics;
-    });
+    const updatedLics = issuedLicenses.map(l => l.id === updatedLic.id ? updatedLic : l);
+    setIssuedLicenses(updatedLics);
+    try {
+      localStorage.setItem(LICENSES_KEY, JSON.stringify(updatedLics));
+    } catch (e) {
+      console.error("Error saving licenses:", e);
+    }
   };
 
   // State mutators
@@ -211,6 +209,8 @@ export default function App() {
 
   const currentChatter = radioChatterQuotes[chatterIndex];
 
+
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 font-sans flex flex-col justify-between">
       {/* Dynamic Navigation */}
@@ -247,7 +247,7 @@ export default function App() {
                     <Sparkles className="h-4 w-4 animate-pulse" />
                     <span>Luchtvaartschool & Vliegtuigverkoop</span>
                   </div>
-                  <h1 className="font-display font-black text-4xl sm:text-6xl tracking-tight leading-none text-white uppercase">
+                                    <h1 className="font-display font-black text-4xl sm:text-6xl tracking-tight leading-none text-white uppercase">
                     Jouw reis <span className="text-[#ea580c] block mt-2">Begint in de lucht.</span>
                   </h1>
                   
@@ -307,7 +307,7 @@ export default function App() {
               </div>
             </section>
           </div>
-        )}
+        ) }
 
         {/* Tab 2: Vliegbrevetten portfolio & purchasing */}
         {currentTab === "brevetten" && (

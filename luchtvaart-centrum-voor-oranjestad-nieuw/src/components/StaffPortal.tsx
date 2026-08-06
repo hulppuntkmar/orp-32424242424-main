@@ -1,30 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Award, Search, Plus, Edit2, Check, X, Users, DollarSign, 
-  Building2, TrendingUp, Settings, FileSpreadsheet, RefreshCw 
+  Award, Plus, Edit2, Check, X, Trash2, DollarSign, 
+  Building2, TrendingUp, Settings 
 } from 'lucide-react';
 
 interface StaffPortalProps {
   licenses?: any[];
   onUpdateLicense?: (updatedLicense: any) => void;
+  onDeleteLicense?: (id: string) => void;
   onCreateLicense?: (newLicense: any) => void;
   staffMembers?: any[];
-  finances?: any;
 }
 
 export const StaffPortal: React.FC<StaffPortalProps> = ({
   licenses = [],
   onUpdateLicense,
+  onDeleteLicense,
   onCreateLicense,
-  staffMembers = [],
-  finances
+  staffMembers = []
 }) => {
   const [activeTab, setActiveTab] = useState<'register' | 'issue' | 'finances' | 'taxes' | 'bonuses' | 'settings'>('register');
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
-  
-  // State voor het opslaan en bewerken van brevetten
+
+  // Lokale state voor brevetten
   const [localLicenses, setLocalLicenses] = useState<any[]>(licenses);
+  
+  // State voor bewerken
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ pilotName: '', bsn: '' });
 
@@ -34,7 +36,7 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
     }
   }, [licenses]);
 
-  // Start bewerken van een specifiek brevet
+  // Start bewerken
   const handleStartEdit = (lic: any) => {
     setEditingId(lic.id);
     setEditForm({
@@ -49,7 +51,7 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
     setEditForm({ pilotName: '', bsn: '' });
   };
 
-  // Sla gewijzigde gegevens (Naam & BSN) op
+  // Opslaan van wijzigingen (Naam & BSN)
   const handleSaveEdit = (id: string) => {
     const updated = localLicenses.map(lic => {
       if (lic.id === id) {
@@ -73,7 +75,18 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
     setEditingId(null);
   };
 
-  // Zoek- en filterlogica
+  // Verwijderen van een brevet
+  const handleDelete = (id: string) => {
+    if (window.confirm('Weet je zeker dat je dit brevet wilt verwijderen?')) {
+      const filtered = localLicenses.filter(l => l.id !== id);
+      setLocalLicenses(filtered);
+      if (onDeleteLicense) {
+        onDeleteLicense(id);
+      }
+    }
+  };
+
+  // Zoek- en filterfunctionaliteit
   const filteredLicenses = localLicenses.filter(lic => {
     const name = (lic.pilotName || lic.klant || '').toLowerCase();
     const bsn = (lic.bsn || '').toLowerCase();
@@ -88,7 +101,7 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
 
   return (
     <div className="space-y-6 text-slate-100 font-sans">
-      {/* BOVENSTE NAVIGATIE TABS (Exact de stijl uit je screenshot) */}
+      {/* BOVENSTE TABS */}
       <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-4">
         <button
           onClick={() => setActiveTab('issue')}
@@ -157,10 +170,10 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
         </button>
       </div>
 
-      {/* DIPLOMA REGISTER TAB CONTENT */}
+      {/* DIPLOMA REGISTER OVERZICHT */}
       {activeTab === 'register' && (
         <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 space-y-6">
-          {/* HEADER & FILTERS */}
+          {/* TITEL & FILTERS */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h2 className="text-xl font-bold text-white tracking-wide">Uitgegeven Vliegbrevetten</h2>
@@ -168,15 +181,13 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
             </div>
 
             <div className="flex flex-wrap gap-3 w-full md:w-auto">
-              <div className="relative flex-1 md:w-64">
-                <input
-                  type="text"
-                  placeholder="Zoek burger, ID of status..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 text-white text-xs px-3 py-2 rounded-lg font-mono focus:outline-none focus:border-amber-500"
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="Zoek burger, ID of status..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="bg-slate-950 border border-slate-800 text-white text-xs px-3 py-2 rounded-lg font-mono focus:outline-none focus:border-amber-500 md:w-64"
+              />
 
               <select
                 value={categoryFilter}
@@ -186,13 +197,11 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
                 <option value="ALL">Alle Diploma's</option>
                 <option value="HELIKOPTER BREVET">Helikopter Brevet</option>
                 <option value="VLIEGTUIG GROOT BREVET">Vliegtuig Groot Brevet</option>
-                <option value="PPL">PPL</option>
-                <option value="CPL">CPL</option>
               </select>
             </div>
           </div>
 
-          {/* TABEL MET UITGEGEVEN BREVETTEN */}
+          {/* TABEL */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
               <thead>
@@ -205,7 +214,7 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
                   <th className="py-3 px-3 uppercase tracking-wider">DATUM</th>
                   <th className="py-3 px-3 uppercase tracking-wider">COMMISSIE STATUS</th>
                   <th className="py-3 px-3 uppercase tracking-wider">BELASTING AFGEDRAGEN</th>
-                  <th className="py-3 px-3 uppercase tracking-wider text-right">ACTIE</th>
+                  <th className="py-3 px-3 uppercase tracking-wider text-right">ACTIES</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/40">
@@ -224,24 +233,24 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
                             type="text"
                             value={editForm.pilotName}
                             onChange={e => setEditForm({ ...editForm, pilotName: e.target.value })}
-                            className="bg-slate-950 border border-amber-500/80 rounded px-2 py-1 text-xs text-white focus:outline-none"
+                            className="bg-slate-950 border border-amber-500/80 rounded px-2 py-1 text-xs text-white focus:outline-none w-full"
                           />
                         ) : (
                           lic.pilotName || lic.klant || 'Onbekend'
                         )}
                       </td>
 
-                      {/* BSN */}
+                      {/* BURGER ID / BSN */}
                       <td className="py-3.5 px-3 text-amber-500 font-bold">
                         {isEditing ? (
                           <input
                             type="text"
                             value={editForm.bsn}
                             onChange={e => setEditForm({ ...editForm, bsn: e.target.value })}
-                            className="bg-slate-950 border border-amber-500/80 rounded px-2 py-1 text-xs text-amber-400 focus:outline-none"
+                            className="bg-slate-950 border border-amber-500/80 rounded px-2 py-1 text-xs text-amber-400 focus:outline-none w-full"
                           />
                         ) : (
-                          `BSN-${lic.bsn || 'NIL'}`
+                          lic.bsn?.startsWith('BSN-') ? lic.bsn : `BSN-${lic.bsn || 'NIL'}`
                         )}
                       </td>
 
@@ -280,7 +289,7 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
                         </span>
                       </td>
 
-                      {/* BEWERKEN / OPSLAAN KNOPPEN */}
+                      {/* ACTIE KNOPPEN (BEWERKEN, OPSLAAN, VERWIJDEREN) */}
                       <td className="py-3.5 px-3 text-right">
                         {isEditing ? (
                           <div className="flex justify-end gap-1.5">
@@ -300,13 +309,22 @@ export const StaffPortal: React.FC<StaffPortalProps> = ({
                             </button>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => handleStartEdit(lic)}
-                            className="p-1.5 bg-slate-800/80 hover:bg-slate-700 text-amber-400 hover:text-amber-300 rounded border border-slate-700 transition"
-                            title="Bewerken"
-                          >
-                            <Edit2 size={14} />
-                          </button>
+                          <div className="flex justify-end gap-1.5">
+                            <button
+                              onClick={() => handleStartEdit(lic)}
+                              className="p-1.5 bg-slate-800/80 hover:bg-slate-700 text-amber-400 hover:text-amber-300 rounded border border-slate-700 transition"
+                              title="Bewerken"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(lic.id)}
+                              className="p-1.5 bg-slate-800/80 hover:bg-rose-900/50 text-rose-400 hover:text-rose-300 rounded border border-slate-700 transition"
+                              title="Verwijderen"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

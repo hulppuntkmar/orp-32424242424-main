@@ -276,11 +276,7 @@ export default function StaffPortal({
         setRole(u.role);
         setFullname(u.fullname);
         setIssuedByTeacher(u.fullname);
-        if (u.role === "owner" || u.role === "manager") {
-          setActiveTab("administration");
-        } else {
-          setActiveTab("issue");
-        }
+        setActiveTab("issue");
         return; // Session restored, skip URL check
       } catch (e) {
         localStorage.removeItem("@luchtvaart_oranjestad_discord_session");
@@ -434,11 +430,7 @@ export default function StaffPortal({
       setIssuedByTeacher(matchedUser.fullname); // Pre-set in forms
       setLoginError(null);
       // Auto tabs based on role
-      if (matchedUser.role === "owner" || matchedUser.role === "manager") {
-        setActiveTab("administration");
-      } else {
-        setActiveTab("issue");
-      }
+      setActiveTab("issue");
     } else {
       setLoginError("Ongeldige inloggegevens. Vul het correcte wachtwoord in.");
     }
@@ -943,19 +935,29 @@ export default function StaffPortal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold">Uitschrijvende Medewerker</label>
+                    <label className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold text-[#ea580c] flex items-center justify-between">
+                      <span>Uitschrijvende Medewerker (Docent)</span>
+                      <span className="text-[9px] text-emerald-400 font-mono">✓ Ingelogd als jij</span>
+                    </label>
                     <select
                       value={issuedByTeacher || fullname}
                       onChange={(e) => setIssuedByTeacher(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 focus:border-[#ea580c] outline-none text-xs text-slate-200 font-sans font-bold"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 focus:border-[#ea580c] outline-none text-xs text-white font-sans font-bold"
                     >
                       {(() => {
-                        const me = staffAccounts.find(acc => acc.fullname === fullname);
-                        const others = staffAccounts.filter(acc => acc.fullname !== fullname);
-                        const sortedAccounts = me ? [me, ...others] : staffAccounts;
-                        return sortedAccounts.map((acc) => (
+                        const myName = fullname || username || "Ingelogde Medewerker";
+                        const exists = staffAccounts.some(acc => acc.fullname === myName);
+                        const accountsList = exists 
+                          ? staffAccounts 
+                          : [{ id: "me-temp", fullname: myName, role: role || "medewerker", username: username || "me", passwordHash: "" }, ...staffAccounts];
+                        
+                        const me = accountsList.find(acc => acc.fullname === myName);
+                        const others = accountsList.filter(acc => acc.fullname !== myName);
+                        const sorted = me ? [me, ...others] : accountsList;
+
+                        return sorted.map((acc) => (
                           <option key={acc.id} value={acc.fullname}>
-                            {acc.fullname} ({acc.role}){acc.fullname === fullname ? " ★ (Ingelogd als jij)" : ""}
+                            {acc.fullname} ({acc.role}){acc.fullname === myName ? " ★ (Ingelogd als jij)" : ""}
                           </option>
                         ));
                       })()}

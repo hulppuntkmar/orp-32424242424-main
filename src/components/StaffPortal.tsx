@@ -463,7 +463,7 @@ export default function StaffPortal({
       citizenName: newCitName.trim(),
       citizenId: finalCitId,
       licenseType: newLicType,
-      issuedBy: issuedByTeacher || fullname || "Instructeur Oranjestad",
+      issuedBy: fullname || username || "Instructeur Oranjestad",
       issueDate: new Date().toLocaleDateString("nl-NL"),
       remarks: newRemarks.trim() || undefined,
       employeeCommissionPaid: false,
@@ -935,33 +935,13 @@ export default function StaffPortal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold text-[#ea580c] flex items-center justify-between">
-                      <span>Uitschrijvende Medewerker (Docent)</span>
-                      <span className="text-[9px] text-emerald-400 font-mono">✓ Ingelogd als jij</span>
-                    </label>
-                    <select
-                      value={issuedByTeacher || fullname}
-                      onChange={(e) => setIssuedByTeacher(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 focus:border-[#ea580c] outline-none text-xs text-white font-sans font-bold"
-                    >
-                      {(() => {
-                        const myName = fullname || username || "Ingelogde Medewerker";
-                        const exists = staffAccounts.some(acc => acc.fullname === myName);
-                        const accountsList = exists 
-                          ? staffAccounts 
-                          : [{ id: "me-temp", fullname: myName, role: role || "medewerker", username: username || "me", passwordHash: "" }, ...staffAccounts];
-                        
-                        const me = accountsList.find(acc => acc.fullname === myName);
-                        const others = accountsList.filter(acc => acc.fullname !== myName);
-                        const sorted = me ? [me, ...others] : accountsList;
-
-                        return sorted.map((acc) => (
-                          <option key={acc.id} value={acc.fullname}>
-                            {acc.fullname} ({acc.role}){acc.fullname === myName ? " ★ (Ingelogd als jij)" : ""}
-                          </option>
-                        ));
-                      })()}
-                    </select>
+                    <label className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold">Uitschrijvende Medewerker</label>
+                    <input
+                      type="text"
+                      readOnly
+                      value={fullname || username || "Ingelogde Medewerker"}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 outline-none text-xs text-white font-sans font-bold cursor-default"
+                    />
                   </div>
                 </div>
 

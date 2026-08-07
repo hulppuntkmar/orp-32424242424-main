@@ -2,7 +2,7 @@ import React from "react";
 import { 
   ShieldCheck, FileSpreadsheet, PlusCircle, Trash2, 
   Settings, UserCheck, HelpCircle, AlertCircle, FileText, CheckCircle, Plus, Image, Users, HelpCircle as HelpIcon,
-  Coins, TrendingUp, Percent, Award, Calendar
+  Coins, TrendingUp, Percent, Award, Calendar, Edit, Pencil
 } from "lucide-react";
 import { IssuedLicense, AircraftInventory, Aircraft, StaffUser } from "../types";
 
@@ -80,6 +80,58 @@ export default function StaffPortal({
   const [bonusModalLic, setBonusModalLic] = React.useState<IssuedLicense | null>(null);
   const [bonusInputValue, setBonusInputValue] = React.useState<number>(5000);
   const [bonusNoteInput, setBonusNoteInput] = React.useState<string>("Prestatie bonus voor uitstekend examen");
+
+  // Edit license modal states
+  const [editModalLic, setEditModalLic] = React.useState<IssuedLicense | null>(null);
+  const [editFormData, setEditFormData] = React.useState<IssuedLicense>({
+    id: "",
+    citizenName: "",
+    citizenId: "",
+    licenseType: "small-plane",
+    issuedBy: "",
+    issueDate: "",
+    remarks: "",
+    employeeCommissionPaid: false,
+    taxPaid: false,
+    bonusAmount: 0,
+    bonusPaid: false,
+    bonusNote: ""
+  });
+
+  const handleOpenEditModal = (lic: IssuedLicense) => {
+    setEditModalLic(lic);
+    setEditFormData({
+      id: lic.id,
+      citizenName: lic.citizenName || "",
+      citizenId: lic.citizenId || "",
+      licenseType: lic.licenseType || "small-plane",
+      issuedBy: lic.issuedBy || "",
+      issueDate: lic.issueDate || new Date().toISOString().split("T")[0],
+      remarks: lic.remarks || "",
+      employeeCommissionPaid: !!lic.employeeCommissionPaid,
+      taxPaid: !!lic.taxPaid,
+      bonusAmount: lic.bonusAmount || 0,
+      bonusPaid: !!lic.bonusPaid,
+      bonusNote: lic.bonusNote || ""
+    });
+  };
+
+  const handleSaveEditLicense = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editModalLic) return;
+    if (!editFormData.citizenName.trim() || !editFormData.citizenId.trim()) {
+      setPortalAlertMessage("Vul a.u.b. ten minste de klantnaam en burger ID (BSN) in!");
+      return;
+    }
+    const updatedLic: IssuedLicense = {
+      ...editFormData,
+      id: editFormData.id.trim() || editModalLic.id,
+      bonusAmount: Number(editFormData.bonusAmount) || 0
+    };
+    onUpdateLicense(updatedLic);
+    setEditModalLic(null);
+    setPortalAlertMessage(`Brevet '${updatedLic.id}' van ${updatedLic.citizenName} succesvol gewijzigd!`);
+  };
 
   // Managers+ (€15k per brevet) states: pre-filled with Mike, John, Yahro
   const [managementMembers, setManagementMembers] = React.useState<string[]>(() => {
@@ -739,7 +791,7 @@ export default function StaffPortal({
                         <th className="py-3 px-4">Datum</th>
                         <th className="py-3 px-4">Commissie status</th>
                         <th className="py-3 px-4">Belasting afgedregen</th>
-                        {(role === "manager" || role === "owner") && <th className="py-3 px-4 text-right">Intrekken</th>}
+                        <th className="py-3 px-4 text-right">Acties</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-850/60 text-slate-300">
@@ -779,17 +831,29 @@ export default function StaffPortal({
                               {lic.taxPaid ? "Afgedragen" : "Openstaand"}
                             </span>
                           </td>
-                          {(role === "manager" || role === "owner") && (
-                            <td className="py-3 px-4 text-right">
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
                               <button
-                                onClick={() => onRemoveLicense(lic.id)}
-                                className="p-1.5 text-slate-500 hover:text-rose-500 hover:bg-slate-800 rounded transition-all cursor-pointer"
-                                title="Brevet intrekken"
+                                type="button"
+                                onClick={() => handleOpenEditModal(lic)}
+                                className="px-2.5 py-1 bg-[#ea580c]/10 border border-[#ea580c]/30 text-[#ea580c] hover:bg-[#ea580c] hover:text-slate-950 rounded-lg transition-all cursor-pointer text-xs flex items-center gap-1.5 font-bold font-sans shadow-sm"
+                                title="Brevet bewerken"
                               >
-                                <Trash2 className="h-4.5 w-4.5" />
+                                <Edit className="h-3.5 w-3.5" />
+                                <span>Bewerken</span>
                               </button>
-                            </td>
-                          )}
+                              {(role === "manager" || role === "owner") && (
+                                <button
+                                  type="button"
+                                  onClick={() => onRemoveLicense(lic.id)}
+                                  className="p-1.5 text-slate-500 hover:text-rose-500 hover:bg-slate-800 rounded transition-all cursor-pointer"
+                                  title="Brevet intrekken"
+                                >
+                                  <Trash2 className="h-4.5 w-4.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1314,6 +1378,7 @@ export default function StaffPortal({
                               <th className="py-3.5 px-4">Commissie</th>
                               <th className="py-3.5 px-4">Bonus</th>
                               <th className="py-3.5 px-4 text-center">Status Uitbetaald</th>
+                              <th className="py-3.5 px-4 text-right">Actie</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-white/5 text-slate-300">
@@ -1355,6 +1420,17 @@ export default function StaffPortal({
                                         {lic.employeeCommissionPaid ? "Betaald" : "Openstaand"}
                                       </span>
                                     </div>
+                                  </td>
+                                  <td className="py-4 px-4 text-right">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditModal(lic)}
+                                      className="px-2.5 py-1 bg-[#ea580c]/10 border border-[#ea580c]/30 text-[#ea580c] hover:bg-[#ea580c] hover:text-slate-950 rounded-lg transition-all cursor-pointer text-xs inline-flex items-center gap-1 font-bold font-sans"
+                                      title="Brevet bewerken"
+                                    >
+                                      <Edit className="h-3.5 w-3.5" />
+                                      <span>Bewerken</span>
+                                    </button>
                                   </td>
                                 </tr>
                               );
@@ -2000,6 +2076,245 @@ export default function StaffPortal({
                   Bonus Fiatteren & Uitkeren
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit License / Brevet Modal */}
+        {editModalLic && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+            <div className="bg-slate-950 border border-white/10 p-6 sm:p-8 rounded-3xl max-w-2xl w-full my-8 shadow-2xl relative space-y-6 animate-fade-in max-h-[90vh] overflow-y-auto">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-[#ea580c]/10 border border-[#ea580c]/20 rounded-xl text-[#ea580c]">
+                    <Edit className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-bold text-lg text-white uppercase tracking-wide">
+                      Brevet / Diploma Bewerken
+                    </h3>
+                    <p className="text-xs text-slate-400 font-mono mt-0.5">
+                      Code: <span className="text-[#ea580c] font-bold">{editModalLic.id}</span> | Klant: <span className="text-white font-medium">{editModalLic.citizenName}</span>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditModalLic(null)}
+                  className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-900 transition-colors cursor-pointer text-base font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSaveEditLicense} className="space-y-6 font-mono text-xs text-slate-300">
+                
+                {/* Section 1: Klant & Brevet Info */}
+                <div>
+                  <h4 className="text-[11px] font-bold text-[#ea580c] uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    <span>Algemene Gegevens</span>
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Diploma ID Code
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.id}
+                        onChange={(e) => setEditFormData({ ...editFormData, id: e.target.value })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-white font-mono outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Klant / Piloot Naam
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.citizenName}
+                        onChange={(e) => setEditFormData({ ...editFormData, citizenName: e.target.value })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-white font-sans outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Burger ID / BSN
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.citizenId}
+                        onChange={(e) => setEditFormData({ ...editFormData, citizenId: e.target.value })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-amber-400 font-mono outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Brevet Categorie
+                      </label>
+                      <select
+                        value={editFormData.licenseType}
+                        onChange={(e) => setEditFormData({ ...editFormData, licenseType: e.target.value as any })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none"
+                      >
+                        <option value="small-plane">Vliegtuig Klein (SEP)</option>
+                        <option value="helicopter">Helikopter (PPL-H)</option>
+                        <option value="large-plane">Vliegtuig Groot (ATPL)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Docent / Uitgeschreven Door
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.issuedBy}
+                        onChange={(e) => setEditFormData({ ...editFormData, issuedBy: e.target.value })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Datum van Uitgifte
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.issueDate}
+                        onChange={(e) => setEditFormData({ ...editFormData, issueDate: e.target.value })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-slate-200 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                      Opmerkingen / Notities
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={editFormData.remarks || ""}
+                      onChange={(e) => setEditFormData({ ...editFormData, remarks: e.target.value })}
+                      placeholder="Eventuele opmerkingen bij het examen of brevet..."
+                      className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-slate-200 font-sans outline-none resize-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Section 2: Financiën & Belasting */}
+                <div className="border-t border-white/10 pt-4">
+                  <h4 className="text-[11px] font-bold text-[#ea580c] uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Coins className="h-4 w-4" />
+                    <span>Financiën & Belasting Status</span>
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Commissie Uitgekeerd Aan Personeel
+                      </label>
+                      <select
+                        value={editFormData.employeeCommissionPaid ? "true" : "false"}
+                        onChange={(e) => setEditFormData({ ...editFormData, employeeCommissionPaid: e.target.value === "true" })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none"
+                      >
+                        <option value="false">Openstaand (Nog uit te keren)</option>
+                        <option value="true">Voldaan (€15.000 uitgekeerd)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Belasting Afgedragen Aan Overheid
+                      </label>
+                      <select
+                        value={editFormData.taxPaid ? "true" : "false"}
+                        onChange={(e) => setEditFormData({ ...editFormData, taxPaid: e.target.value === "true" })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none"
+                      >
+                        <option value="false">Openstaand (Nog af te dragen)</option>
+                        <option value="true">Afgedragen (7% voldaan)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 3: Prestatie Bonus */}
+                <div className="border-t border-white/10 pt-4">
+                  <h4 className="text-[11px] font-bold text-[#ea580c] uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Award className="h-4 w-4" />
+                    <span>Prestatie Bonus Gegevens</span>
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Bonus Bedrag (€)
+                      </label>
+                      <input
+                        type="number"
+                        value={editFormData.bonusAmount || 0}
+                        onChange={(e) => setEditFormData({ ...editFormData, bonusAmount: Number(e.target.value) })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-emerald-400 font-bold outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Bonus Status
+                      </label>
+                      <select
+                        value={editFormData.bonusPaid ? "true" : "false"}
+                        onChange={(e) => setEditFormData({ ...editFormData, bonusPaid: e.target.value === "true" })}
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none"
+                      >
+                        <option value="false">Openstaand</option>
+                        <option value="true">Uitgekeerd</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1 font-bold">
+                        Bonus Toelichting
+                      </label>
+                      <input
+                        type="text"
+                        value={editFormData.bonusNote || ""}
+                        onChange={(e) => setEditFormData({ ...editFormData, bonusNote: e.target.value })}
+                        placeholder="bijv: Uitstekend examen resultaat"
+                        className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-white font-sans outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer buttons */}
+                <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditModalLic(null)}
+                    className="bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold py-2.5 px-5 rounded-xl cursor-pointer border border-white/10 transition-colors"
+                  >
+                    Annuleren
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-slate-950 font-bold py-2.5 px-6 rounded-xl uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-[#ea580c]/20 flex items-center gap-2"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Wijzigingen Opslaan</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

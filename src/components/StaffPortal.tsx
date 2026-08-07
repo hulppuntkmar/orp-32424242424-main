@@ -564,8 +564,8 @@ export default function StaffPortal({
   const getLicenseTypeLabel = (type: string) => {
     switch(type) {
       case "helicopter": return "Helikopter brevet";
-      case "small-plane": return "Vliegtuig Klein brevet";
-      case "large-plane": return "Vliegtuig Groot brevet";
+      case "small-plane": return "Klein vliegbrevet";
+      case "large-plane": return "Groot vliegbrevet";
       default: return type;
     }
   };
@@ -766,9 +766,9 @@ export default function StaffPortal({
                     className="bg-slate-900 border border-slate-850 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[#ea580c] font-mono text-slate-300"
                   >
                     <option value="all">Alle Diploma's</option>
-                    <option value="helicopter">Helikopter</option>
-                    <option value="small-plane">Vliegtuig Klein</option>
-                    <option value="large-plane">Vliegtuig Groot</option>
+                    <option value="small-plane">Klein vliegbrevet</option>
+                    <option value="large-plane">Groot vliegbrevet</option>
+                    <option value="helicopter">Helikopter brevet</option>
                   </select>
                 </div>
               </div>
@@ -926,9 +926,9 @@ export default function StaffPortal({
                       onChange={(e) => setNewLicType(e.target.value as any)}
                       className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 focus:border-[#ea580c] outline-none text-xs text-slate-300 font-sans"
                     >
+                      <option value="small-plane">Klein vliegbrevet</option>
+                      <option value="large-plane">Groot vliegbrevet</option>
                       <option value="helicopter">Helikopter brevet</option>
-                      <option value="small-plane">Vliegtuig Klein brevet</option>
-                      <option value="large-plane">Vliegtuig Groot brevet</option>
                     </select>
                   </div>
 
@@ -2167,9 +2167,9 @@ export default function StaffPortal({
                         onChange={(e) => setEditFormData({ ...editFormData, licenseType: e.target.value as any })}
                         className="w-full bg-slate-900 border border-white/10 focus:border-[#ea580c] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none"
                       >
-                        <option value="small-plane">Vliegtuig Klein (SEP)</option>
-                        <option value="helicopter">Helikopter (PPL-H)</option>
-                        <option value="large-plane">Vliegtuig Groot (ATPL)</option>
+                        <option value="small-plane">Klein vliegbrevet</option>
+                        <option value="large-plane">Groot vliegbrevet</option>
+                        <option value="helicopter">Helikopter brevet</option>
                       </select>
                     </div>
 

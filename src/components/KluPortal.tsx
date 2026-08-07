@@ -265,9 +265,9 @@ export default function KluPortal({
 
   const getLicenseTypeLabel = (type: string) => {
     switch (type) {
-      case "helicopter": return "Helikopter Brevet";
-      case "large-plane": return "Vliegtuig Groot";
-      case "small-plane": return "Vliegtuig Klein";
+      case "helicopter": return "Helikopter brevet";
+      case "large-plane": return "Groot vliegbrevet";
+      case "small-plane": return "Klein vliegbrevet";
       default: return type;
     }
   };
@@ -602,9 +602,9 @@ export default function KluPortal({
                           onChange={(e) => setFormLicenseType(e.target.value as any)}
                           className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-3 focus:border-slate-500 outline-none text-slate-200 text-xs cursor-pointer font-sans"
                         >
-                          <option value="helicopter">Helikopter Brevet</option>
-                          <option value="small-plane">Kleine Vliegtuigen (Tactisch)</option>
-                          <option value="large-plane">Grote Vliegtuigen (Transport)</option>
+                          <option value="small-plane">Klein vliegbrevet</option>
+                          <option value="large-plane">Groot vliegbrevet</option>
+                          <option value="helicopter">Helikopter brevet</option>
                         </select>
                       </div>
                       <div>
@@ -680,9 +680,9 @@ export default function KluPortal({
                     className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2.5 px-3 focus:border-slate-500 outline-none text-slate-200 text-xs font-mono cursor-pointer"
                   >
                     <option value="all">Alle Bevoegdheden</option>
-                    <option value="helicopter">Helikopter Brevetten</option>
-                    <option value="small-plane">Kleine Vliegtuigen (Tactisch)</option>
-                    <option value="large-plane">Grote Vliegtuigen (Transport)</option>
+                    <option value="small-plane">Klein vliegbrevet</option>
+                    <option value="large-plane">Groot vliegbrevet</option>
+                    <option value="helicopter">Helikopter brevet</option>
                   </select>
                 </div>
               </div>

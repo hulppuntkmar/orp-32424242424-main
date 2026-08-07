@@ -258,6 +258,13 @@ export default function StaffPortal({
     return () => clearInterval(interval);
   }, []);
 
+  // Always keep issuedByTeacher pre-filled with logged-in user's full name
+  React.useEffect(() => {
+    if (fullname) {
+      setIssuedByTeacher(fullname);
+    }
+  }, [fullname, isLoggedIn]);
+
   // Check for Discord code inside URL or custom session on mount
   React.useEffect(() => {
     // 1. First check if we have a saved Discord session
@@ -474,10 +481,13 @@ export default function StaffPortal({
     onAddLicense(newLic);
     setFormSuccess(true);
     
-    // Reset form fields
+    // Reset form fields while preserving logged-in teacher as issuer
     setNewCitName("");
     setNewCitId("BSN-");
     setNewRemarks("");
+    if (fullname) {
+      setIssuedByTeacher(fullname);
+    }
 
     setTimeout(() => {
       setFormSuccess(false);
@@ -933,17 +943,22 @@ export default function StaffPortal({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-500 uppercase tracking-widest block">Uitschrijvende Medewerker</label>
+                    <label className="text-[10px] text-slate-500 uppercase tracking-widest block font-bold">Uitschrijvende Medewerker</label>
                     <select
-                      value={issuedByTeacher}
+                      value={issuedByTeacher || fullname}
                       onChange={(e) => setIssuedByTeacher(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 focus:border-[#ea580c] outline-none text-xs text-slate-350 font-sans font-bold"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 focus:border-[#ea580c] outline-none text-xs text-slate-200 font-sans font-bold"
                     >
-                      {staffAccounts.map((acc) => (
-                        <option key={acc.id} value={acc.fullname}>
-                          {acc.fullname} ({acc.role})
-                        </option>
-                      ))}
+                      {(() => {
+                        const me = staffAccounts.find(acc => acc.fullname === fullname);
+                        const others = staffAccounts.filter(acc => acc.fullname !== fullname);
+                        const sortedAccounts = me ? [me, ...others] : staffAccounts;
+                        return sortedAccounts.map((acc) => (
+                          <option key={acc.id} value={acc.fullname}>
+                            {acc.fullname} ({acc.role}){acc.fullname === fullname ? " ★ (Ingelogd als jij)" : ""}
+                          </option>
+                        ));
+                      })()}
                     </select>
                   </div>
                 </div>

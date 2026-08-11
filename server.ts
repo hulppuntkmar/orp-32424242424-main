@@ -4,6 +4,7 @@ import fs from "fs";
 import dotenv from "dotenv";
 import { GoogleGenAI, Type } from "@google/genai";
 import { createServer as createViteServer } from "vite";
+import { ensureUniqueLicenseId } from "./src/lib/licenseId";
 
 dotenv.config();
 
@@ -84,6 +85,7 @@ function saveDb(dbData: any) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
     fs.writeFileSync(DB_FILE, JSON.stringify(dbData, null, 2), "utf-8");
+    fs.writeFileSync(PORTAL_DATA_FILE, JSON.stringify(dbData, null, 2), "utf-8");
   } catch (err) {
     console.error("Error writing db file:", err);
   }
@@ -97,14 +99,19 @@ app.get("/api/shared-data", (req, res) => {
 
 app.post("/api/shared-data/license", (req, res) => {
   const newLic = req.body;
-  if (!newLic || !newLic.id) return res.status(400).json({ error: "Ongeldige license data" });
+  if (!newLic) return res.status(400).json({ error: "Ongeldige license data" });
   
   const db = loadDb();
-  const existsIndex = db.issuedLicenses.findIndex((l: any) => l.id === newLic.id);
+  const safeLicense = {
+    ...newLic,
+    id: ensureUniqueLicenseId(newLic.id, db.issuedLicenses)
+  };
+
+  const existsIndex = db.issuedLicenses.findIndex((l: any) => l.id === safeLicense.id);
   if (existsIndex >= 0) {
-    db.issuedLicenses[existsIndex] = { ...db.issuedLicenses[existsIndex], ...newLic };
+    db.issuedLicenses[existsIndex] = { ...db.issuedLicenses[existsIndex], ...safeLicense };
   } else {
-    db.issuedLicenses = [newLic, ...db.issuedLicenses];
+    db.issuedLicenses = [safeLicense, ...db.issuedLicenses];
   }
   saveDb(db);
   res.json({ success: true, db });

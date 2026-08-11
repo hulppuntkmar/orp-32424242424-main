@@ -1199,5 +1199,10 @@
       "passwordHash": "LOGGED_IN_VIA_DISCORD",
       "fullname": "Mike"
     }
+  ],
+  "managementMembers": [
+    "Mike",
+    "John",
+    "Yahro"
   ]
 }

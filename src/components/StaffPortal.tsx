@@ -5,6 +5,7 @@ import {
   Coins, TrendingUp, Percent, Award, Calendar, Edit, Pencil
 } from "lucide-react";
 import { IssuedLicense, AircraftInventory, Aircraft, StaffUser } from "../types";
+import { ensureUniqueLicenseId } from "../lib/licenseId";
 
 interface StaffPortalProps {
   issuedLicenses: IssuedLicense[];
@@ -459,7 +460,7 @@ export default function StaffPortal({
     }
 
     const newLic: IssuedLicense = {
-      id: "lic-" + Math.floor(1000 + Math.random() * 9000),
+      id: ensureUniqueLicenseId(undefined, issuedLicenses),
       citizenName: newCitName.trim(),
       citizenId: finalCitId,
       licenseType: newLicType,

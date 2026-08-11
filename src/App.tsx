@@ -12,6 +12,7 @@ import AircraftMarketplace from "./components/AircraftMarketplace";
 import StaffPortal from "./components/StaffPortal";
 import { DEFAULT_ISSUED_LICENSES, DEFAULT_INVENTORY, AIRCRAFT_LIST } from "./data";
 import LSIAFuturisticMap from "./components/LSIAFuturisticMap";
+import { ensureUniqueLicenseId } from "./lib/licenseId";
 
 const STORAGE_KEY = "@luchtvaart_oranjestad_logbook";
 const ENROLL_KEY = "@luchtvaart_oranjestad_enrolled";
@@ -142,44 +143,82 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleAddLicense = (newLic: IssuedLicense) => {
-    const updatedLics = [newLic, ...issuedLicenses];
-    setIssuedLicenses(updatedLics);
+  const handleAddLicense = async (newLic: IssuedLicense) => {
+    const safeLic: IssuedLicense = {
+      ...newLic,
+      id: ensureUniqueLicenseId(newLic.id, issuedLicenses)
+    };
+
+    setIssuedLicenses(prev => {
+      const next = [safeLic, ...prev];
+      localStorage.setItem(LICENSES_KEY, JSON.stringify(next));
+      return next;
+    });
     try {
-      localStorage.setItem(LICENSES_KEY, JSON.stringify(updatedLics));
-      fetch("/api/shared-data/license", {
+      const res = await fetch("/api/shared-data/license", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newLic)
-      }).catch(() => {});
+        body: JSON.stringify(safeLic)
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.db?.issuedLicenses) {
+          const serverLicenses = data.db.issuedLicenses as IssuedLicense[];
+          setIssuedLicenses(serverLicenses);
+          localStorage.setItem(LICENSES_KEY, JSON.stringify(serverLicenses));
+        }
+      }
     } catch (e) {
       console.error("Error saving licenses:", e);
     }
   };
 
-  const handleRemoveLicense = (licId: string) => {
-    const updatedLics = issuedLicenses.filter(l => l.id !== licId);
-    setIssuedLicenses(updatedLics);
+  const handleRemoveLicense = async (licId: string) => {
+    setIssuedLicenses(prev => {
+      const next = prev.filter(l => l.id !== licId);
+      localStorage.setItem(LICENSES_KEY, JSON.stringify(next));
+      return next;
+    });
     try {
-      localStorage.setItem(LICENSES_KEY, JSON.stringify(updatedLics));
-      fetch(`/api/shared-data/license/${licId}`, {
+      const res = await fetch(`/api/shared-data/license/${licId}`, {
         method: "DELETE"
-      }).catch(() => {});
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.db?.issuedLicenses) {
+          const serverLicenses = data.db.issuedLicenses as IssuedLicense[];
+          setIssuedLicenses(serverLicenses);
+          localStorage.setItem(LICENSES_KEY, JSON.stringify(serverLicenses));
+        }
+      }
     } catch (e) {
       console.error("Error saving licenses:", e);
     }
   };
 
-  const handleUpdateLicense = (updatedLic: IssuedLicense) => {
-    const updatedLics = issuedLicenses.map(l => l.id === updatedLic.id ? updatedLic : l);
-    setIssuedLicenses(updatedLics);
+  const handleUpdateLicense = async (updatedLic: IssuedLicense) => {
+    setIssuedLicenses(prev => {
+      const next = prev.map(l => l.id === updatedLic.id ? updatedLic : l);
+      localStorage.setItem(LICENSES_KEY, JSON.stringify(next));
+      return next;
+    });
     try {
-      localStorage.setItem(LICENSES_KEY, JSON.stringify(updatedLics));
-      fetch(`/api/shared-data/license/${updatedLic.id}`, {
+      const res = await fetch(`/api/shared-data/license/${updatedLic.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedLic)
-      }).catch(() => {});
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.db?.issuedLicenses) {
+          const serverLicenses = data.db.issuedLicenses as IssuedLicense[];
+          setIssuedLicenses(serverLicenses);
+          localStorage.setItem(LICENSES_KEY, JSON.stringify(serverLicenses));
+        }
+      }
     } catch (e) {
       console.error("Error saving licenses:", e);
     }

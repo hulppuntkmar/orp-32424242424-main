@@ -1,6 +1,15 @@
 {
   "issuedLicenses": [
     {
+      "id": "lic-test-unique-21262",
+      "managementFeePaid": true,
+      "issuedBy": "Test",
+      "taxPaid": true,
+      "issueDate": "12-08-2026",
+      "citizenName": "Test User",
+      "licenseType": "small-plane"
+    },
+    {
       "citizenName": "Martin Vasilyev",
       "id": "lic-6625",
       "taxPaid": true,

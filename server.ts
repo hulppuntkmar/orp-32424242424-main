@@ -50,27 +50,51 @@ const initialDb = {
 
 const PORTAL_DATA_FILE = path.join(process.cwd(), "portal-data.json");
 
+function atomicWrite(filePath: string, data: any) {
+  const tempFile = `${filePath}.tmp`;
+  fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), "utf-8");
+  fs.renameSync(tempFile, filePath);
+}
+
 function loadDb() {
   try {
     const dataDir = path.dirname(DB_FILE);
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
+
+    const validateParsed = (parsed: any) => {
+      if (!parsed.managementMembers || !Array.isArray(parsed.managementMembers)) {
+        parsed.managementMembers = ["Mike", "John", "Yahro"];
+      }
+      if (!parsed.staffAccounts || !Array.isArray(parsed.staffAccounts)) {
+        parsed.staffAccounts = [...initialDb.staffAccounts];
+      }
+      if (!parsed.issuedLicenses || !Array.isArray(parsed.issuedLicenses)) {
+        parsed.issuedLicenses = [];
+      }
+      return parsed;
+    };
+
     if (fs.existsSync(DB_FILE)) {
-      const raw = fs.readFileSync(DB_FILE, "utf-8");
-      const parsed = JSON.parse(raw);
-      if (!parsed.managementMembers || !Array.isArray(parsed.managementMembers)) {
-        parsed.managementMembers = ["Mike", "John", "Yahro"];
+      try {
+        const raw = fs.readFileSync(DB_FILE, "utf-8");
+        const parsed = validateParsed(JSON.parse(raw));
+        return parsed;
+      } catch (err) {
+        console.error("Error parsing db.json, falling back to portal-data.json:", err);
       }
-      return parsed;
-    } else if (fs.existsSync(PORTAL_DATA_FILE)) {
-      const raw = fs.readFileSync(PORTAL_DATA_FILE, "utf-8");
-      const parsed = JSON.parse(raw);
-      if (!parsed.managementMembers || !Array.isArray(parsed.managementMembers)) {
-        parsed.managementMembers = ["Mike", "John", "Yahro"];
+    }
+
+    if (fs.existsSync(PORTAL_DATA_FILE)) {
+      try {
+        const raw = fs.readFileSync(PORTAL_DATA_FILE, "utf-8");
+        const parsed = validateParsed(JSON.parse(raw));
+        atomicWrite(DB_FILE, parsed);
+        return parsed;
+      } catch (err) {
+        console.error("Error parsing portal-data.json:", err);
       }
-      fs.writeFileSync(DB_FILE, JSON.stringify(parsed, null, 2), "utf-8");
-      return parsed;
     }
   } catch (err) {
     console.error("Error reading db file:", err);
@@ -84,8 +108,8 @@ function saveDb(dbData: any) {
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
-    fs.writeFileSync(DB_FILE, JSON.stringify(dbData, null, 2), "utf-8");
-    fs.writeFileSync(PORTAL_DATA_FILE, JSON.stringify(dbData, null, 2), "utf-8");
+    atomicWrite(DB_FILE, dbData);
+    atomicWrite(PORTAL_DATA_FILE, dbData);
   } catch (err) {
     console.error("Error writing db file:", err);
   }

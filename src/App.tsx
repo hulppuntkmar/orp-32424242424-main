@@ -132,6 +132,22 @@ export default function App() {
   };
 
   // Live multi-user synchronization with Render server DB
+  const readStoredLicenses = (): IssuedLicense[] => {
+    try {
+      const stored = localStorage.getItem(LICENSES_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const mergeLicenseSnapshots = (localLicenses: IssuedLicense[], serverLicenses: IssuedLicense[]) => {
+    const localIds = new Set(localLicenses.map((license) => license.id));
+    return [...localLicenses, ...serverLicenses.filter((license) => !localIds.has(license.id))];
+  };
+
   const loadPendingLicenses = (): IssuedLicense[] => {
     try {
       const stored = localStorage.getItem(PENDING_LICENSES_KEY);
@@ -181,11 +197,10 @@ export default function App() {
 
   const mergePendingWithServerLicenses = (serverLicenses: IssuedLicense[]) => {
     const pendingLicenses = loadPendingLicenses();
-    if (pendingLicenses.length === 0) return serverLicenses;
-    return [
-      ...pendingLicenses,
-      ...serverLicenses.filter((license) => !pendingLicenses.some((pending) => pending.id === license.id))
-    ];
+   const localLicenses = readStoredLicenses();
+   const baseCandidates = mergeLicenseSnapshots(localLicenses, serverLicenses);
+   if (pendingLicenses.length === 0) return baseCandidates;
+   return mergeLicenseSnapshots(baseCandidates, pendingLicenses);
   };
  
   const syncWithServer = async () => {

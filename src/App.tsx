@@ -17,6 +17,7 @@ import { ensureUniqueLicenseId } from "./lib/licenseId";
 const STORAGE_KEY = "@luchtvaart_oranjestad_logbook";
 const ENROLL_KEY = "@luchtvaart_oranjestad_enrolled";
 const LICENSES_KEY = "@luchtvaart_oranjestad_issued_licenses";
+const PENDING_LICENSES_KEY = "@luchtvaart_oranjestad_pending_issued_licenses";
 const INVENTORY_KEY = "@luchtvaart_oranjestad_inventory";
 const AIRCRAFT_LIST_KEY = "@luchtvaart_oranjestad_aircraft_list";
 
@@ -58,10 +59,10 @@ export default function App() {
       
       const storedLicenses = localStorage.getItem(LICENSES_KEY);
       let activeLicenses = DEFAULT_ISSUED_LICENSES;
-      if (storedLicenses) {
+      if (storedLicenses !== null) {
         try {
           const parsed = JSON.parse(storedLicenses);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             activeLicenses = parsed;
           } else {
             activeLicenses = DEFAULT_ISSUED_LICENSES;
@@ -72,6 +73,13 @@ export default function App() {
       } else {
         activeLicenses = DEFAULT_ISSUED_LICENSES;
         localStorage.setItem(LICENSES_KEY, JSON.stringify(DEFAULT_ISSUED_LICENSES));
+      }
+      const pendingLicenses = loadPendingLicenses();
+      if (pendingLicenses.length > 0) {
+        activeLicenses = [
+          ...pendingLicenses,
+          ...activeLicenses.filter((license) => !pendingLicenses.some((pending) => pending.id === license.id))
+        ];
       }
       setIssuedLicenses(activeLicenses);
 
@@ -124,17 +132,77 @@ export default function App() {
   };
 
   // Live multi-user synchronization with Render server DB
+  const loadPendingLicenses = (): IssuedLicense[] => {
+    try {
+      const stored = localStorage.getItem(PENDING_LICENSES_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const savePendingLicenses = (pending: IssuedLicense[]) => {
+    localStorage.setItem(PENDING_LICENSES_KEY, JSON.stringify(pending));
+  };
+
+  const queuePendingLicense = (license: IssuedLicense) => {
+    const pending = loadPendingLicenses();
+    pending.push(license);
+    savePendingLicenses(pending);
+  };
+
+  const flushPendingLicenses = async () => {
+    const pending = loadPendingLicenses();
+    if (pending.length === 0) return;
+
+    const synced: IssuedLicense[] = [];
+    for (const lic of pending) {
+      try {
+        const res = await fetch("/api/shared-data/license", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(lic)
+        });
+        if (res.ok) {
+          synced.push(lic);
+        }
+      } catch {
+        // Keep the license in the queue if the sync fails.
+      }
+    }
+
+    if (synced.length > 0) {
+      const remaining = pending.filter((lic) => !synced.some((syncedLic) => syncedLic.id === lic.id));
+      savePendingLicenses(remaining);
+    }
+  };
+
+  const mergePendingWithServerLicenses = (serverLicenses: IssuedLicense[]) => {
+    const pendingLicenses = loadPendingLicenses();
+    if (pendingLicenses.length === 0) return serverLicenses;
+    return [
+      ...pendingLicenses,
+      ...serverLicenses.filter((license) => !pendingLicenses.some((pending) => pending.id === license.id))
+    ];
+  };
+ 
   const syncWithServer = async () => {
     try {
       const res = await fetch("/api/shared-data");
       if (res.ok) {
         const data = await res.json();
         if (data.issuedLicenses && Array.isArray(data.issuedLicenses)) {
-          setIssuedLicenses(data.issuedLicenses);
-          localStorage.setItem(LICENSES_KEY, JSON.stringify(data.issuedLicenses));
+          const merged = mergePendingWithServerLicenses(data.issuedLicenses as IssuedLicense[]);
+          setIssuedLicenses(merged);
+          localStorage.setItem(LICENSES_KEY, JSON.stringify(merged));
+          await flushPendingLicenses();
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      // Keep working from local state if the server is unavailable.
+    }
   };
 
   React.useEffect(() => {
@@ -146,7 +214,7 @@ export default function App() {
   const handleAddLicense = async (newLic: IssuedLicense) => {
     const safeLic: IssuedLicense = {
       ...newLic,
-      id: ensureUniqueLicenseId(newLic.id, issuedLicenses)
+      id: ensureUniqueLicenseId(newLic.id, [...issuedLicenses, ...loadPendingLicenses()])
     };
 
     setIssuedLicenses(prev => {
@@ -154,6 +222,9 @@ export default function App() {
       localStorage.setItem(LICENSES_KEY, JSON.stringify(next));
       return next;
     });
+
+    queuePendingLicense(safeLic);
+
     try {
       const res = await fetch("/api/shared-data/license", {
         method: "POST",
@@ -163,11 +234,14 @@ export default function App() {
 
       if (res.ok) {
         const data = await res.json();
-        if (data?.db?.issuedLicenses) {
-          const serverLicenses = data.db.issuedLicenses as IssuedLicense[];
-          setIssuedLicenses(serverLicenses);
-          localStorage.setItem(LICENSES_KEY, JSON.stringify(serverLicenses));
+        if (data?.db?.issuedLicenses && Array.isArray(data.db.issuedLicenses)) {
+          setIssuedLicenses(data.db.issuedLicenses as IssuedLicense[]);
+          localStorage.setItem(LICENSES_KEY, JSON.stringify(data.db.issuedLicenses));
+          const remaining = loadPendingLicenses().filter((lic) => lic.id !== safeLic.id);
+          savePendingLicenses(remaining);
         }
+      } else {
+        console.error("Failed to save license to server", res.statusText);
       }
     } catch (e) {
       console.error("Error saving licenses:", e);
@@ -175,11 +249,6 @@ export default function App() {
   };
 
   const handleRemoveLicense = async (licId: string) => {
-    setIssuedLicenses(prev => {
-      const next = prev.filter(l => l.id !== licId);
-      localStorage.setItem(LICENSES_KEY, JSON.stringify(next));
-      return next;
-    });
     try {
       const res = await fetch(`/api/shared-data/license/${licId}`, {
         method: "DELETE"
@@ -187,23 +256,25 @@ export default function App() {
 
       if (res.ok) {
         const data = await res.json();
-        if (data?.db?.issuedLicenses) {
-          const serverLicenses = data.db.issuedLicenses as IssuedLicense[];
-          setIssuedLicenses(serverLicenses);
-          localStorage.setItem(LICENSES_KEY, JSON.stringify(serverLicenses));
+        if (data?.db?.issuedLicenses && Array.isArray(data.db.issuedLicenses)) {
+          setIssuedLicenses(data.db.issuedLicenses as IssuedLicense[]);
+          localStorage.setItem(LICENSES_KEY, JSON.stringify(data.db.issuedLicenses));
+        } else {
+          setIssuedLicenses((prev) => {
+            const next = prev.filter(l => l.id !== licId);
+            localStorage.setItem(LICENSES_KEY, JSON.stringify(next));
+            return next;
+          });
         }
+      } else {
+        console.error("Failed to delete license on server", res.statusText);
       }
     } catch (e) {
-      console.error("Error saving licenses:", e);
+      console.error("Error deleting license:", e);
     }
   };
 
   const handleUpdateLicense = async (updatedLic: IssuedLicense) => {
-    setIssuedLicenses(prev => {
-      const next = prev.map(l => l.id === updatedLic.id ? updatedLic : l);
-      localStorage.setItem(LICENSES_KEY, JSON.stringify(next));
-      return next;
-    });
     try {
       const res = await fetch(`/api/shared-data/license/${updatedLic.id}`, {
         method: "PUT",
@@ -213,14 +284,21 @@ export default function App() {
 
       if (res.ok) {
         const data = await res.json();
-        if (data?.db?.issuedLicenses) {
-          const serverLicenses = data.db.issuedLicenses as IssuedLicense[];
-          setIssuedLicenses(serverLicenses);
-          localStorage.setItem(LICENSES_KEY, JSON.stringify(serverLicenses));
+        if (data?.db?.issuedLicenses && Array.isArray(data.db.issuedLicenses)) {
+          setIssuedLicenses(data.db.issuedLicenses as IssuedLicense[]);
+          localStorage.setItem(LICENSES_KEY, JSON.stringify(data.db.issuedLicenses));
+        } else {
+          setIssuedLicenses((prev) => {
+            const next = prev.map(l => l.id === updatedLic.id ? updatedLic : l);
+            localStorage.setItem(LICENSES_KEY, JSON.stringify(next));
+            return next;
+          });
         }
+      } else {
+        console.error("Failed to update license on server", res.statusText);
       }
     } catch (e) {
-      console.error("Error saving licenses:", e);
+      console.error("Error updating license:", e);
     }
   };
 

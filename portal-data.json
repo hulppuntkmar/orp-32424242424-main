@@ -1,6 +1,16 @@
 {
   "issuedLicenses": [
     {
+      "id": "lic-diagnostic-94713",
+      "citizenName": "Diag User",
+      "taxPaid": true,
+      "licenseType": "small-plane",
+      "issueDate": "12-08-2026",
+      "issuedBy": "Diag",
+      "citizenId": "BSN-00000",
+      "managementFeePaid": true
+    },
+    {
       "id": "lic-test-unique-21262",
       "managementFeePaid": true,
       "issuedBy": "Test",

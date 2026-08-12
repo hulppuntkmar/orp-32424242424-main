@@ -108,6 +108,7 @@ function saveDb(dbData: any) {
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
+
     atomicWrite(DB_FILE, dbData);
     atomicWrite(PORTAL_DATA_FILE, dbData);
   } catch (err) {
@@ -128,15 +129,23 @@ app.post("/api/shared-data/license", (req, res) => {
   const db = loadDb();
   const safeLicense = {
     ...newLic,
-    id: ensureUniqueLicenseId(newLic.id, db.issuedLicenses)
+    id: ensureUniqueLicenseId(newLic.id, db.issuedLicenses),
+    updatedAt: Date.now()
   };
 
+  // Check if this license already exists (by ID after normalization)
   const existsIndex = db.issuedLicenses.findIndex((l: any) => l.id === safeLicense.id);
   if (existsIndex >= 0) {
-    db.issuedLicenses[existsIndex] = { ...db.issuedLicenses[existsIndex], ...safeLicense };
+    // Update existing (merge with incoming)
+    const licAt = db.issuedLicenses[existsIndex].updatedAt || 0;
+    if (safeLicense.updatedAt >= licAt) {
+      db.issuedLicenses[existsIndex] = safeLicense;
+    }
   } else {
+    // Add new license to front
     db.issuedLicenses = [safeLicense, ...db.issuedLicenses];
   }
+  
   saveDb(db);
   res.json({ success: true, db });
 });
@@ -144,9 +153,28 @@ app.post("/api/shared-data/license", (req, res) => {
 app.put("/api/shared-data/license/:id", (req, res) => {
   const { id } = req.params;
   const updatedLic = req.body;
-  
+  updatedLic.updatedAt = Date.now();
+
+  // Load current state from disk
   const db = loadDb();
-  db.issuedLicenses = db.issuedLicenses.map((lic: any) => lic.id === id ? { ...lic, ...updatedLic } : lic);
+  
+  // Merge: find existing license, keep newer version
+  let found = false;
+  db.issuedLicenses = db.issuedLicenses.map((lic: any) => {
+    if (lic.id === id) {
+      found = true;
+      const licAt = lic.updatedAt || 0;
+      const updatedAt = updatedLic.updatedAt;
+      // Keep newer version (incoming has fresh timestamp, so it should win)
+      return updatedAt >= licAt ? { ...lic, ...updatedLic } : lic;
+    }
+    return lic;
+  });
+
+  if (!found) {
+    return res.status(404).json({ error: `License ${id} not found` });
+  }
+
   saveDb(db);
   res.json({ success: true, db });
 });

@@ -109,35 +109,8 @@ function saveDb(dbData: any) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
 
-    // Merge with existing file if present to avoid overwriting with stale snapshots.
-    let finalData = dbData;
-    if (fs.existsSync(DB_FILE)) {
-      try {
-        const raw = fs.readFileSync(DB_FILE, "utf-8");
-        const existing = JSON.parse(raw);
-        const map = new Map<string, any>();
-
-        (existing.issuedLicenses || []).forEach((lic: any) => map.set(lic.id, lic));
-        (dbData.issuedLicenses || []).forEach((lic: any) => {
-          const cur = map.get(lic.id);
-          if (!cur) {
-            map.set(lic.id, lic);
-            return;
-          }
-          const curAt = cur.updatedAt || 0;
-          const incomingAt = lic.updatedAt || Date.now();
-          if (incomingAt >= curAt) map.set(lic.id, lic);
-        });
-
-        finalData = { ...existing, ...dbData, issuedLicenses: Array.from(map.values()) };
-      } catch (err) {
-        console.error("Error merging db file, falling back to incoming dbData:", err);
-        finalData = dbData;
-      }
-    }
-
-    atomicWrite(DB_FILE, finalData);
-    atomicWrite(PORTAL_DATA_FILE, finalData);
+    atomicWrite(DB_FILE, dbData);
+    atomicWrite(PORTAL_DATA_FILE, dbData);
   } catch (err) {
     console.error("Error writing db file:", err);
   }
@@ -160,12 +133,19 @@ app.post("/api/shared-data/license", (req, res) => {
     updatedAt: Date.now()
   };
 
+  // Check if this license already exists (by ID after normalization)
   const existsIndex = db.issuedLicenses.findIndex((l: any) => l.id === safeLicense.id);
   if (existsIndex >= 0) {
-    db.issuedLicenses[existsIndex] = { ...db.issuedLicenses[existsIndex], ...safeLicense, updatedAt: Date.now() };
+    // Update existing (merge with incoming)
+    const licAt = db.issuedLicenses[existsIndex].updatedAt || 0;
+    if (safeLicense.updatedAt >= licAt) {
+      db.issuedLicenses[existsIndex] = safeLicense;
+    }
   } else {
+    // Add new license to front
     db.issuedLicenses = [safeLicense, ...db.issuedLicenses];
   }
+  
   saveDb(db);
   res.json({ success: true, db });
 });
@@ -175,8 +155,26 @@ app.put("/api/shared-data/license/:id", (req, res) => {
   const updatedLic = req.body;
   updatedLic.updatedAt = Date.now();
 
+  // Load current state from disk
   const db = loadDb();
-  db.issuedLicenses = db.issuedLicenses.map((lic: any) => lic.id === id ? { ...lic, ...updatedLic } : lic);
+  
+  // Merge: find existing license, keep newer version
+  let found = false;
+  db.issuedLicenses = db.issuedLicenses.map((lic: any) => {
+    if (lic.id === id) {
+      found = true;
+      const licAt = lic.updatedAt || 0;
+      const updatedAt = updatedLic.updatedAt;
+      // Keep newer version (incoming has fresh timestamp, so it should win)
+      return updatedAt >= licAt ? { ...lic, ...updatedLic } : lic;
+    }
+    return lic;
+  });
+
+  if (!found) {
+    return res.status(404).json({ error: `License ${id} not found` });
+  }
+
   saveDb(db);
   res.json({ success: true, db });
 });

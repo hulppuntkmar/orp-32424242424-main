@@ -96,13 +96,24 @@ export interface IssuedLicense {
   citizenId: string; // CID / BSN
   licenseType: "helicopter" | "small-plane" | "large-plane";
   issuedBy: string; // Staff member who signed it off
+  issuedByDiscordId?: string;
   issueDate: string;
   remarks?: string;
   employeeCommissionPaid?: boolean;
   taxPaid?: boolean;
+  managementFeePaid?: boolean;
   bonusAmount?: number;
   bonusPaid?: boolean;
   bonusNote?: string;
+  updatedAt?: number;
+  strikes?: number;
+  strikeReasons?: string[];
+  revoked?: boolean;
+  revokedBy?: string;
+  revokeDate?: string;
+  revokeReason?: string;
+  kluApproved?: boolean;
+  isPreExisting?: boolean;
 }
 
 export interface AircraftInventory {
@@ -111,4 +122,26 @@ export interface AircraftInventory {
   status: "Op voorraad" | "Gereserveerd" | "Uitverkocht";
   priceOverride?: number;
 }
+
+export interface KluHandbookChapter {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface LicenseLog {
+  id: string;
+  timestamp: string;
+  action: string;
+  performedBy: string;
+  performedByRole?: string;
+  citizenName?: string;
+  citizenId?: string;
+  targetId?: string;
+  details?: string;
+}
+
 

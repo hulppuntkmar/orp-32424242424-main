@@ -15,32 +15,10 @@ app.use(express.json());
 
 // Persistent shared database file for Render & multi-user sync
 const DB_FILE = path.join(process.cwd(), "data", "db.json");
+const PORTAL_DATA_FILE = path.join(process.cwd(), "portal-data.json");
 
-const initialDb = {
-  issuedLicenses: [
-    {
-      id: "ORJ-84920",
-      citizenName: "Trevor Philips",
-      citizenId: "BSN-98421",
-      licenseType: "small-plane",
-      issueDate: "2026-07-28",
-      issuedBy: "Mike Lapose",
-      remarks: "Testvlucht met succes afgerond boven de haven van Oranjestad.",
-      employeeCommissionPaid: false,
-      taxPaid: false
-    },
-    {
-      id: "ORJ-12048",
-      citizenName: "Franklin Clinton",
-      citizenId: "BSN-44120",
-      licenseType: "helicopter",
-      issueDate: "2026-07-25",
-      issuedBy: "Mike Lapose",
-      remarks: "Helikopter landingstests bij Oranjestad Helikopterplatform.",
-      employeeCommissionPaid: true,
-      taxPaid: true
-    }
-  ],
+const fallbackDb = {
+  issuedLicenses: [],
   staffAccounts: [
     { id: "u-1", username: "MikeL", passwordHash: "MikeLapose_eigenaar99!", role: "owner", fullname: "Mike Lapose" }
   ],
@@ -48,125 +26,208 @@ const initialDb = {
   taxDueDate: Date.now() + 14 * 24 * 60 * 60 * 1000
 };
 
-const PORTAL_DATA_FILE = path.join(process.cwd(), "portal-data.json");
+// In-Memory Master DB State (Single Source of Truth)
+let dbState: any = null;
+let isSaving = false;
+let saveQueued = false;
 
-function atomicWrite(filePath: string, data: any) {
-  const tempFile = `${filePath}.tmp`;
-  fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), "utf-8");
-  fs.renameSync(tempFile, filePath);
+function sanitizeDb(data: any): any {
+  if (!data || typeof data !== "object") {
+    data = {};
+  }
+  if (!Array.isArray(data.issuedLicenses)) {
+    data.issuedLicenses = [];
+  }
+  // Filter out any diagnostic/test mock entries and ensure unique IDs
+  const seenIds = new Set<string>();
+  data.issuedLicenses = data.issuedLicenses
+    .filter((l: any) => l && l.id && l.id !== "lic-diagnostic-94713" && l.id !== "lic-test-unique-21262")
+    .map((l: any) => {
+      let safeId = l.id;
+      if (seenIds.has(safeId)) {
+        let nextNum = 7925;
+        while (seenIds.has(`lic-${nextNum}`)) {
+          nextNum++;
+        }
+        safeId = `lic-${nextNum}`;
+      }
+      seenIds.add(safeId);
+      return {
+        ...l,
+        id: safeId,
+        citizenName: l.citizenName || "Onbekend",
+        citizenId: l.citizenId || "BSN-00000000",
+        licenseType: l.licenseType || "small-plane",
+        issuedBy: l.issuedBy || "Directie",
+        issueDate: l.issueDate || new Date().toLocaleDateString("nl-NL"),
+        employeeCommissionPaid: !!l.employeeCommissionPaid,
+        taxPaid: !!l.taxPaid,
+        managementFeePaid: !!l.managementFeePaid,
+        updatedAt: l.updatedAt || Date.now()
+      };
+    });
+
+  if (!Array.isArray(data.staffAccounts) || data.staffAccounts.length === 0) {
+    data.staffAccounts = [...fallbackDb.staffAccounts];
+  } else {
+    // Ensure primary owner account exists
+    if (!data.staffAccounts.some((u: any) => u.username === "MikeL")) {
+      data.staffAccounts.unshift({
+        id: "u-1",
+        username: "MikeL",
+        passwordHash: "MikeLapose_eigenaar99!",
+        role: "owner",
+        fullname: "Mike Lapose"
+      });
+    }
+  }
+
+  if (!Array.isArray(data.managementMembers) || data.managementMembers.length === 0) {
+    data.managementMembers = ["Mike", "John", "Yahro"];
+  }
+
+  if (!data.taxDueDate || typeof data.taxDueDate !== "number") {
+    data.taxDueDate = Date.now() + 14 * 24 * 60 * 60 * 1000;
+  }
+
+  return data;
 }
 
-function loadDb() {
+function initDb(): any {
   try {
     const dataDir = path.dirname(DB_FILE);
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
 
-    const validateParsed = (parsed: any) => {
-      if (!parsed.managementMembers || !Array.isArray(parsed.managementMembers)) {
-        parsed.managementMembers = ["Mike", "John", "Yahro"];
-      }
-      if (!parsed.staffAccounts || !Array.isArray(parsed.staffAccounts)) {
-        parsed.staffAccounts = [...initialDb.staffAccounts];
-      }
-      if (!parsed.issuedLicenses || !Array.isArray(parsed.issuedLicenses)) {
-        parsed.issuedLicenses = [];
-      }
-      return parsed;
-    };
-
     if (fs.existsSync(DB_FILE)) {
       try {
         const raw = fs.readFileSync(DB_FILE, "utf-8");
-        const parsed = validateParsed(JSON.parse(raw));
-        return parsed;
+        const parsed = JSON.parse(raw);
+        return sanitizeDb(parsed);
       } catch (err) {
-        console.error("Error parsing db.json, falling back to portal-data.json:", err);
+        console.error("Error reading db.json, trying portal-data.json fallback:", err);
       }
     }
 
     if (fs.existsSync(PORTAL_DATA_FILE)) {
       try {
         const raw = fs.readFileSync(PORTAL_DATA_FILE, "utf-8");
-        const parsed = validateParsed(JSON.parse(raw));
-        atomicWrite(DB_FILE, parsed);
-        return parsed;
+        const parsed = JSON.parse(raw);
+        return sanitizeDb(parsed);
       } catch (err) {
-        console.error("Error parsing portal-data.json:", err);
+        console.error("Error reading portal-data.json:", err);
       }
     }
   } catch (err) {
-    console.error("Error reading db file:", err);
+    console.error("Critical error in initDb:", err);
   }
-  return initialDb;
+
+  return sanitizeDb({ ...fallbackDb });
 }
 
-function saveDb(dbData: any) {
-  try {
-    const dataDir = path.dirname(DB_FILE);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+// Initialize In-Memory database
+dbState = initDb();
+
+// Queued async disk write to prevent race conditions and Windows EPERM lock collisions
+function scheduleSaveDb() {
+  if (isSaving) {
+    saveQueued = true;
+    return;
+  }
+  isSaving = true;
+
+  setImmediate(() => {
+    try {
+      const dataDir = path.dirname(DB_FILE);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+
+      const payload = JSON.stringify(dbState, null, 2);
+
+      // Safe write to main DB_FILE
+      const tempFile = path.join(dataDir, `db.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 6)}`);
+      fs.writeFileSync(tempFile, payload, "utf-8");
+
+      try {
+        if (fs.existsSync(DB_FILE)) {
+          fs.copyFileSync(tempFile, DB_FILE);
+          try { fs.unlinkSync(tempFile); } catch {}
+        } else {
+          fs.renameSync(tempFile, DB_FILE);
+        }
+      } catch {
+        fs.writeFileSync(DB_FILE, payload, "utf-8");
+        try { if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile); } catch {}
+      }
+
+      // Safe backup to PORTAL_DATA_FILE
+      try {
+        fs.writeFileSync(PORTAL_DATA_FILE, payload, "utf-8");
+      } catch (err) {
+        console.error("Warning: could not write to portal-data.json:", err);
+      }
+    } catch (err) {
+      console.error("Error saving database to disk:", err);
+    } finally {
+      isSaving = false;
+      if (saveQueued) {
+        saveQueued = false;
+        scheduleSaveDb();
+      }
     }
-
-    atomicWrite(DB_FILE, dbData);
-    atomicWrite(PORTAL_DATA_FILE, dbData);
-  } catch (err) {
-    console.error("Error writing db file:", err);
-  }
+  });
 }
 
-// Shared Data API for multi-user synchronization on Render
+// Initial flush to ensure files on disk are clean and sanitized
+scheduleSaveDb();
+
+// -------------------------------------------------------------
+// Shared Data API for multi-user synchronization
+// -------------------------------------------------------------
+
 app.get("/api/shared-data", (req, res) => {
-  const db = loadDb();
-  res.json(db);
+  res.json(dbState);
 });
 
 app.post("/api/shared-data/license", (req, res) => {
   const newLic = req.body;
-  if (!newLic) return res.status(400).json({ error: "Ongeldige license data" });
-  
-  const db = loadDb();
+  if (!newLic || typeof newLic !== "object") {
+    return res.status(400).json({ error: "Ongeldige license data" });
+  }
+
   const safeLicense = {
     ...newLic,
-    id: ensureUniqueLicenseId(newLic.id, db.issuedLicenses),
+    id: ensureUniqueLicenseId(newLic.id, dbState.issuedLicenses),
     updatedAt: Date.now()
   };
 
-  // Check if this license already exists (by ID after normalization)
-  const existsIndex = db.issuedLicenses.findIndex((l: any) => l.id === safeLicense.id);
+  const existsIndex = dbState.issuedLicenses.findIndex((l: any) => l.id === safeLicense.id);
   if (existsIndex >= 0) {
-    // Update existing (merge with incoming)
-    const licAt = db.issuedLicenses[existsIndex].updatedAt || 0;
-    if (safeLicense.updatedAt >= licAt) {
-      db.issuedLicenses[existsIndex] = safeLicense;
-    }
+    dbState.issuedLicenses[existsIndex] = safeLicense;
   } else {
-    // Add new license to front
-    db.issuedLicenses = [safeLicense, ...db.issuedLicenses];
+    dbState.issuedLicenses = [safeLicense, ...dbState.issuedLicenses];
   }
-  
-  saveDb(db);
-  res.json({ success: true, db });
+
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
 });
 
 app.put("/api/shared-data/license/:id", (req, res) => {
   const { id } = req.params;
   const updatedLic = req.body;
+  if (!updatedLic || typeof updatedLic !== "object") {
+    return res.status(400).json({ error: "Ongeldige license data" });
+  }
+
   updatedLic.updatedAt = Date.now();
 
-  // Load current state from disk
-  const db = loadDb();
-  
-  // Merge: find existing license, keep newer version
   let found = false;
-  db.issuedLicenses = db.issuedLicenses.map((lic: any) => {
+  dbState.issuedLicenses = dbState.issuedLicenses.map((lic: any) => {
     if (lic.id === id) {
       found = true;
-      const licAt = lic.updatedAt || 0;
-      const updatedAt = updatedLic.updatedAt;
-      // Keep newer version (incoming has fresh timestamp, so it should win)
-      return updatedAt >= licAt ? { ...lic, ...updatedLic } : lic;
+      return { ...lic, ...updatedLic, id };
     }
     return lic;
   });
@@ -175,55 +236,111 @@ app.put("/api/shared-data/license/:id", (req, res) => {
     return res.status(404).json({ error: `License ${id} not found` });
   }
 
-  saveDb(db);
-  res.json({ success: true, db });
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
 });
 
 app.delete("/api/shared-data/license/:id", (req, res) => {
   const { id } = req.params;
-  const db = loadDb();
-  db.issuedLicenses = db.issuedLicenses.filter((lic: any) => lic.id !== id);
-  saveDb(db);
-  res.json({ success: true, db });
+  dbState.issuedLicenses = dbState.issuedLicenses.filter((lic: any) => lic.id !== id);
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/licenses/batch", (req, res) => {
+  const { licenses } = req.body;
+  if (!Array.isArray(licenses)) {
+    return res.status(400).json({ error: "Ongeldige batch data" });
+  }
+
+  const updateMap = new Map<string, any>();
+  licenses.forEach((lic: any) => {
+    if (lic && lic.id) {
+      updateMap.set(lic.id, { ...lic, updatedAt: Date.now() });
+    }
+  });
+
+  dbState.issuedLicenses = dbState.issuedLicenses.map((lic: any) => {
+    if (updateMap.has(lic.id)) {
+      return { ...lic, ...updateMap.get(lic.id) };
+    }
+    return lic;
+  });
+
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/pay-taxes", (req, res) => {
+  const now = Date.now();
+  const nextDueDate = now + 14 * 24 * 60 * 60 * 1000;
+
+  dbState.issuedLicenses = dbState.issuedLicenses.map((lic: any) => {
+    if (!lic.taxPaid) {
+      return { ...lic, taxPaid: true, updatedAt: now };
+    }
+    return lic;
+  });
+
+  dbState.taxDueDate = nextDueDate;
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState, nextDueDate });
 });
 
 app.post("/api/shared-data/staff-account", (req, res) => {
   const newAccount = req.body;
   if (!newAccount || !newAccount.id) return res.status(400).json({ error: "Ongeldige account data" });
 
-  const db = loadDb();
-  const exists = db.staffAccounts.some((a: any) => a.id === newAccount.id || a.username === newAccount.username);
-  if (!exists) {
-    db.staffAccounts = [...db.staffAccounts, newAccount];
-    saveDb(db);
+  const existsIndex = dbState.staffAccounts.findIndex((a: any) => a.id === newAccount.id || a.username === newAccount.username);
+  if (existsIndex >= 0) {
+    dbState.staffAccounts[existsIndex] = { ...dbState.staffAccounts[existsIndex], ...newAccount };
+  } else {
+    dbState.staffAccounts = [...dbState.staffAccounts, newAccount];
   }
-  res.json({ success: true, db });
+
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
 });
 
 app.delete("/api/shared-data/staff-account/:id", (req, res) => {
   const { id } = req.params;
-  const db = loadDb();
-  db.staffAccounts = db.staffAccounts.filter((acc: any) => acc.id !== id);
-  saveDb(db);
-  res.json({ success: true, db });
+  dbState.staffAccounts = dbState.staffAccounts.filter((acc: any) => acc.id !== id);
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
 });
 
 app.post("/api/shared-data/management-members", (req, res) => {
   const { managementMembers } = req.body;
   if (!Array.isArray(managementMembers)) return res.status(400).json({ error: "Ongeldige data" });
 
-  const db = loadDb();
-  db.managementMembers = managementMembers;
-  saveDb(db);
-  res.json({ success: true, db });
+  dbState.managementMembers = managementMembers;
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
 });
 
 app.post("/api/shared-data/tax-due-date", (req, res) => {
   const { taxDueDate } = req.body;
-  const db = loadDb();
-  db.taxDueDate = taxDueDate;
-  saveDb(db);
-  res.json({ success: true, db });
+  dbState.taxDueDate = Number(taxDueDate) || (Date.now() + 14 * 24 * 60 * 60 * 1000);
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/inventory", (req, res) => {
+  const { inventory } = req.body;
+  if (Array.isArray(inventory)) {
+    dbState.inventory = inventory;
+    scheduleSaveDb();
+  }
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/aircraft-list", (req, res) => {
+  const { aircraftList } = req.body;
+  if (Array.isArray(aircraftList)) {
+    dbState.aircraftList = aircraftList;
+    scheduleSaveDb();
+  }
+  res.json({ success: true, db: dbState });
 });
 
 // Initialize Gemini Client safely

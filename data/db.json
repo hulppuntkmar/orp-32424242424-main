@@ -1,25 +1,6 @@
 {
   "issuedLicenses": [
     {
-      "id": "lic-diagnostic-94713",
-      "citizenName": "Diag User",
-      "taxPaid": true,
-      "licenseType": "small-plane",
-      "issueDate": "12-08-2026",
-      "issuedBy": "Diag",
-      "citizenId": "BSN-00000",
-      "managementFeePaid": true
-    },
-    {
-      "id": "lic-test-unique-21262",
-      "managementFeePaid": true,
-      "issuedBy": "Test",
-      "taxPaid": true,
-      "issueDate": "12-08-2026",
-      "citizenName": "Test User",
-      "licenseType": "small-plane"
-    },
-    {
       "citizenName": "Martin Vasilyev",
       "id": "lic-6625",
       "taxPaid": true,
@@ -28,7 +9,8 @@
       "issueDate": "6-6-2026",
       "licenseType": "large-plane",
       "employeeCommissionPaid": true,
-      "citizenId": "BSN-85145495"
+      "citizenId": "BSN-85145495",
+      "updatedAt": 1787490831641
     },
     {
       "citizenId": "BSN-86551022",
@@ -40,7 +22,8 @@
       "remarks": "Cursist is geslaagd",
       "taxPaid": false,
       "id": "lic-3965",
-      "citizenName": "Dwayne The Rock"
+      "citizenName": "Dwayne The Rock",
+      "updatedAt": 1787490831641
     },
     {
       "taxPaid": false,
@@ -52,7 +35,8 @@
       "employeeCommissionPaid": true,
       "issueDate": "3-6-2026",
       "issuedBy": "Yahro",
-      "managementFeePaid": false
+      "managementFeePaid": false,
+      "updatedAt": 1787490831641
     },
     {
       "citizenName": "Jason White",
@@ -64,7 +48,8 @@
       "issuedBy": "Military_Touch",
       "citizenId": "BSN-81463127",
       "employeeCommissionPaid": true,
-      "licenseType": "helicopter"
+      "licenseType": "helicopter",
+      "updatedAt": 1787490831641
     },
     {
       "issueDate": "3-6-2026",
@@ -76,7 +61,8 @@
       "citizenName": "Joey Winkelwagen",
       "remarks": "cursist is geslaagd",
       "taxPaid": false,
-      "id": "lic-7625"
+      "id": "lic-7625",
+      "updatedAt": 1787490831641
     },
     {
       "citizenName": "Milan de kok",
@@ -88,7 +74,8 @@
       "managementFeePaid": false,
       "citizenId": "BSN-75683537",
       "employeeCommissionPaid": true,
-      "licenseType": "helicopter"
+      "licenseType": "helicopter",
+      "updatedAt": 1787490831641
     },
     {
       "employeeCommissionPaid": true,
@@ -100,7 +87,8 @@
       "id": "lic-3788",
       "remarks": "Cursist is geslaagd",
       "taxPaid": false,
-      "citizenName": "Bennie Wies"
+      "citizenName": "Bennie Wies",
+      "updatedAt": 1787490831641
     },
     {
       "citizenName": "Zoe Cuore",
@@ -112,7 +100,8 @@
       "issueDate": "2-6-2026",
       "employeeCommissionPaid": true,
       "licenseType": "helicopter",
-      "citizenId": "BSN- 92681628"
+      "citizenId": "BSN- 92681628",
+      "updatedAt": 1787490831641
     },
     {
       "employeeCommissionPaid": true,
@@ -124,7 +113,8 @@
       "id": "lic-3207",
       "taxPaid": false,
       "remarks": "cursist is geslaagd",
-      "citizenName": "Bryan Mehewez"
+      "citizenName": "Bryan Mehewez",
+      "updatedAt": 1787490831641
     },
     {
       "citizenId": "BSN-91931636",
@@ -135,7 +125,8 @@
       "managementFeePaid": true,
       "taxPaid": true,
       "id": "lic-9565",
-      "citizenName": "Adam Mahmoud"
+      "citizenName": "Adam Mahmoud",
+      "updatedAt": 1787490831641
     },
     {
       "licenseType": "large-plane",
@@ -146,7 +137,8 @@
       "issueDate": "1-6-2026",
       "id": "lic-3410",
       "taxPaid": true,
-      "citizenName": "John Frost"
+      "citizenName": "John Frost",
+      "updatedAt": 1787490831641
     },
     {
       "issuedByDiscordId": "1087831804775514142",
@@ -158,7 +150,8 @@
       "citizenId": "BSN-NIL",
       "citizenName": "Keano batsbak",
       "id": "lic-5464",
-      "taxPaid": true
+      "taxPaid": true,
+      "updatedAt": 1787490831641
     },
     {
       "licenseType": "helicopter",
@@ -170,7 +163,8 @@
       "issueDate": "1-6-2026",
       "id": "lic-7924",
       "taxPaid": true,
-      "citizenName": "Luciano Stof"
+      "citizenName": "Luciano Stof",
+      "updatedAt": 1787490831641
     },
     {
       "citizenName": "Adam Mahmoud",
@@ -181,7 +175,8 @@
       "issueDate": "1-6-2026",
       "employeeCommissionPaid": true,
       "licenseType": "helicopter",
-      "citizenId": "BSN-NIL"
+      "citizenId": "BSN-NIL",
+      "updatedAt": 1787490831641
     },
     {
       "taxPaid": true,
@@ -193,7 +188,8 @@
       "issueDate": "1-6-2026",
       "issuedByDiscordId": "459230738798346253",
       "issuedBy": "Jens",
-      "managementFeePaid": true
+      "managementFeePaid": true,
+      "updatedAt": 1787490831641
     },
     {
       "employeeCommissionPaid": false,
@@ -205,7 +201,8 @@
       "issueDate": "1-6-2026",
       "id": "lic-4272",
       "taxPaid": true,
-      "citizenName": "Jaya Glauco"
+      "citizenName": "Jaya Glauco",
+      "updatedAt": 1787490831641
     },
     {
       "citizenName": "Autumn Azc",
@@ -217,7 +214,8 @@
       "issueDate": "1-6-2026",
       "licenseType": "helicopter",
       "employeeCommissionPaid": true,
-      "citizenId": "BSN-16849219"
+      "citizenId": "BSN-16849219",
+      "updatedAt": 1787490831641
     },
     {
       "licenseType": "helicopter",
@@ -229,7 +227,8 @@
       "issueDate": "1-6-2026",
       "id": "lic-3390",
       "taxPaid": true,
-      "citizenName": "Risemes Soep"
+      "citizenName": "Risemes Soep",
+      "updatedAt": 1787490831641
     },
     {
       "issuedByDiscordId": "1250892233776042128",
@@ -241,7 +240,8 @@
       "citizenId": "BSN-93146354",
       "citizenName": "Vito Glock",
       "id": "lic-1129",
-      "taxPaid": true
+      "taxPaid": true,
+      "updatedAt": 1787490831641
     },
     {
       "id": "lic-9503",
@@ -253,7 +253,8 @@
       "issuedByDiscordId": "1250892233776042128",
       "issuedBy": "military_touch",
       "managementFeePaid": true,
-      "issueDate": "1-6-2026"
+      "issueDate": "1-6-2026",
+      "updatedAt": 1787490831641
     },
     {
       "id": "lic-1111",
@@ -264,7 +265,9 @@
       "issueDate": "4-8-2026",
       "remarks": "Ramon Alvarez | Datum: 4-8-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1112",
@@ -275,7 +278,9 @@
       "issueDate": "3-8-2026",
       "remarks": "Mahmoed Kliko | Datum: 3-8-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1113",
@@ -286,7 +291,9 @@
       "issueDate": "3-8-2026",
       "remarks": "Luciano Bullet | Datum: 3-8-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1114",
@@ -297,7 +304,9 @@
       "issueDate": "2-8-2026",
       "remarks": "Diego Mara | Datum: 2-8-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1115",
@@ -308,7 +317,9 @@
       "issueDate": "2-8-2026",
       "remarks": "John Gaming | Datum: 2-8-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1116",
@@ -319,7 +330,9 @@
       "issueDate": "2-8-2026",
       "remarks": "Djanairo bosh | Datum: 2-8-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1117",
@@ -330,7 +343,9 @@
       "issueDate": "2-8-2026",
       "remarks": "Benjamin Dorsselaer | Datum: 2-8-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1118",
@@ -341,7 +356,9 @@
       "issueDate": "1-8-2026",
       "remarks": "Sjoerd Haan | Datum: 1-8-2026 | Betaald factuur: 250.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1119",
@@ -352,7 +369,9 @@
       "issueDate": "1-8-2026",
       "remarks": "Bryan Jaa Tochh | Datum: 1-8-2026 | Betaald factuur: 250.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1120",
@@ -363,7 +382,9 @@
       "issueDate": "31-7-2026",
       "remarks": "Zeph Saint | Datum: 31-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1121",
@@ -374,7 +395,9 @@
       "issueDate": "31-7-2026",
       "remarks": "Luna Ciao | Datum: 31-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1122",
@@ -385,7 +408,9 @@
       "issueDate": "26-07-2026",
       "remarks": "Aetoo Don | Datum: 26-07-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1123",
@@ -396,7 +421,9 @@
       "issueDate": "26-07-2026",
       "remarks": "Renzo Defermez | Datum: 26-07-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1124",
@@ -407,7 +434,9 @@
       "issueDate": "26-07-2026",
       "remarks": "Ben Balpen | Datum: 26-07-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1125",
@@ -418,7 +447,9 @@
       "issueDate": "22-07-2026",
       "remarks": "Lucifer Morningstar | Datum: 22-07-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1126",
@@ -429,7 +460,9 @@
       "issueDate": "21-07-2026",
       "remarks": "Ryan Bombo | Datum: 21-07-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1127",
@@ -440,7 +473,9 @@
       "issueDate": "21-07-2026",
       "remarks": "Riet Van | Datum: 21-07-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1128",
@@ -451,10 +486,12 @@
       "issueDate": "18-5-2026",
       "remarks": "Bodien Pookie | Datum: 18-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831641,
+      "managementFeePaid": false
     },
     {
-      "id": "lic-1129",
+      "id": "lic-7925",
       "citizenName": "Opa Kogel",
       "citizenId": "BSN-44472039",
       "licenseType": "helicopter",
@@ -462,7 +499,9 @@
       "issueDate": "17-5-2026",
       "remarks": "Opa Kogel | Datum: 17-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1130",
@@ -473,7 +512,9 @@
       "issueDate": "16-7-2026",
       "remarks": "Jona De jong | Datum: 16-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1131",
@@ -484,7 +525,9 @@
       "issueDate": "14-7-2026",
       "remarks": "Boris Kruiwagen | Datum: 14-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1132",
@@ -495,7 +538,9 @@
       "issueDate": "14-7-2026",
       "remarks": "Ruben Buikvet | Datum: 14-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1133",
@@ -506,7 +551,9 @@
       "issueDate": "14-7-2026",
       "remarks": "Super Mario | Datum: 14-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1134",
@@ -517,7 +564,9 @@
       "issueDate": "14-7-2026",
       "remarks": "Frans De lang | Datum: 14-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1135",
@@ -528,7 +577,9 @@
       "issueDate": "12-7-2026",
       "remarks": "Yari Kever | Datum: 12-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1136",
@@ -539,7 +590,9 @@
       "issueDate": "12-7-2026",
       "remarks": "Dex Bloempie | Datum: 12-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1137",
@@ -550,7 +603,9 @@
       "issueDate": "11-7-2026",
       "remarks": "Robin Don | Datum: 11-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1138",
@@ -561,7 +616,9 @@
       "issueDate": "12-7-2026",
       "remarks": "Jef Deslipper | Datum: 12-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1139",
@@ -572,7 +629,9 @@
       "issueDate": "3-5-2026",
       "remarks": "Karel Master | Datum: 3-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1140",
@@ -583,7 +642,9 @@
       "issueDate": "8-7-2026",
       "remarks": "Shiiri Shiiri | Datum: 8-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1141",
@@ -594,7 +655,9 @@
       "issueDate": "7-7-2026",
       "remarks": "Abdelhakaziz Sbe | Datum: 7-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1142",
@@ -605,7 +668,9 @@
       "issueDate": "4-7-2026",
       "remarks": "Dion Beun | Datum: 4-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1143",
@@ -616,7 +681,9 @@
       "issueDate": "02-07-2026",
       "remarks": "Luca Kaal | Datum: 02-07-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1144",
@@ -627,7 +694,9 @@
       "issueDate": "2-7-2026",
       "remarks": "Lisa Druif | Datum: 2-7-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1145",
@@ -638,7 +707,9 @@
       "issueDate": "2-7-2026",
       "remarks": "Pacho Herrera | Datum: 2-7-2026 | Betaald factuur: 750.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1146",
@@ -649,7 +720,9 @@
       "issueDate": "29-5-2026",
       "remarks": "Evert Baptist | Datum: 29-5-2026 | Betaald factuur: 100.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1147",
@@ -660,7 +733,9 @@
       "issueDate": "30-6-2026",
       "remarks": "Finn Spiekske | Datum: 30-6-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1148",
@@ -671,7 +746,9 @@
       "issueDate": "30-6-2026",
       "remarks": "Mike Magic | Datum: 30-6-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1149",
@@ -682,7 +759,9 @@
       "issueDate": "29-6-2026",
       "remarks": "Blam Metje | Datum: 29-6-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1150",
@@ -693,7 +772,9 @@
       "issueDate": "29-6-2026",
       "remarks": "Djino Aza | Datum: 29-6-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1151",
@@ -704,7 +785,9 @@
       "issueDate": "29-6-2026",
       "remarks": "Bertske Pink | Datum: 29-6-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1152",
@@ -715,7 +798,9 @@
       "issueDate": "29-06-2026",
       "remarks": "Enzo Baksteen | Datum: 29-06-2026 | Betaald factuur: 100.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1153",
@@ -726,7 +811,9 @@
       "issueDate": "28-06-2026",
       "remarks": "Mehmet Kogel | Datum: 28-06-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1154",
@@ -737,7 +824,9 @@
       "issueDate": "26-06-2026",
       "remarks": "Sill De Wit | Datum: 26-06-2026 | Betaald factuur: 150.000 | Site bewerkt: nee",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1155",
@@ -748,7 +837,9 @@
       "issueDate": "16-6-2026",
       "remarks": "Peter Pan | Datum: 16-6-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1156",
@@ -759,7 +850,9 @@
       "issueDate": "22-6-2026",
       "remarks": "Quinten Frikandel | Datum: 22-6-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1157",
@@ -770,7 +863,9 @@
       "issueDate": "24-6-2026",
       "remarks": "Jay Kaas | Datum: 24-6-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1158",
@@ -781,7 +876,9 @@
       "issueDate": "13-06-2026",
       "remarks": "Gert Verhulst | Datum: 13-06-2026 | Betaald factuur: 150.000 | Site bewerkt: niet gemarkeerd",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1159",
@@ -792,7 +889,9 @@
       "issueDate": "07-06-2026",
       "remarks": "Mike Bizon | Datum: 07-06-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1160",
@@ -803,7 +902,9 @@
       "issueDate": "04-06-2026",
       "remarks": "Dwayne The Rock | Datum: 04-06-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1161",
@@ -814,7 +915,9 @@
       "issueDate": "03-06-2026",
       "remarks": "Jason White | Datum: 03-06-2026 | Betaald factuur: 100.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1162",
@@ -825,7 +928,9 @@
       "issueDate": "03-06-2026",
       "remarks": "Joey Winkelwagen | Datum: 03-06-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1163",
@@ -836,7 +941,9 @@
       "issueDate": "03-06-2026",
       "remarks": "Milan de kok | Datum: 03-06-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1164",
@@ -847,7 +954,9 @@
       "issueDate": "03-06-2026",
       "remarks": "Bennie Wies | Datum: 03-06-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1165",
@@ -858,7 +967,9 @@
       "issueDate": "02-06-2026",
       "remarks": "Zoe Cuore | Datum: 02-06-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1166",
@@ -869,7 +980,9 @@
       "issueDate": "01-06-2026",
       "remarks": "Bryan Mehewez | Datum: 01-06-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1167",
@@ -880,7 +993,9 @@
       "issueDate": "31-5-2026",
       "remarks": "Tom Beuker | Datum: 31-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1168",
@@ -891,7 +1006,9 @@
       "issueDate": "31-5-2026",
       "remarks": "Vito Glock | Datum: 31-5-2026 | Betaald factuur: 100.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1169",
@@ -902,7 +1019,9 @@
       "issueDate": "30-5-2026",
       "remarks": "Risemes Soep | Datum: 30-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1170",
@@ -913,7 +1032,9 @@
       "issueDate": "30-5-2026",
       "remarks": "Jack Moon | Datum: 30-5-2026 | Betaald factuur: 100.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1171",
@@ -924,7 +1045,9 @@
       "issueDate": "29-5-2026",
       "remarks": "Autumn Azc | Datum: 29-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1172",
@@ -935,7 +1058,9 @@
       "issueDate": "30-5-2026",
       "remarks": "Jaya Glauco | Datum: 30-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1173",
@@ -946,7 +1071,9 @@
       "issueDate": "30-5-2026",
       "remarks": "Carlos Bombo | Datum: 30-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1174",
@@ -957,7 +1084,9 @@
       "issueDate": "29-5-2026",
       "remarks": "Adam Mahmoud | Datum: 29-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1175",
@@ -968,7 +1097,9 @@
       "issueDate": "27-5-2026",
       "remarks": "Luciano Stof | Datum: 27-5-2026 | Betaald factuur: 150.000 | Site bewerkt: nee",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1176",
@@ -979,7 +1110,9 @@
       "issueDate": "28-5-2026",
       "remarks": "Keano batsbak | Datum: 28-5-2026 | Betaald factuur: 150k | Site bewerkt: nee",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1177",
@@ -990,7 +1123,9 @@
       "issueDate": "27-5-2026",
       "remarks": "Nawid Afg | Datum: 27-5-2026 | Betaald factuur: 150.000 | Site bewerkt: nee",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1178",
@@ -1001,7 +1136,9 @@
       "issueDate": "20-5-2026",
       "remarks": "Jacob Van Gompel | Datum: 20-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1179",
@@ -1012,7 +1149,9 @@
       "issueDate": "17-5-2026",
       "remarks": "Quin Gerro | Datum: 17-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1180",
@@ -1023,7 +1162,9 @@
       "issueDate": "19-5-2026",
       "remarks": "Pim Fortuin | Datum: 19-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1181",
@@ -1034,7 +1175,9 @@
       "issueDate": "13-5-2026",
       "remarks": "Jimmy Fufu | Datum: 13-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1182",
@@ -1045,7 +1188,9 @@
       "issueDate": "11-5-2026",
       "remarks": "Thijs Arend | Datum: 11-5-2026 | Betaald factuur: 200.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1183",
@@ -1056,7 +1201,9 @@
       "issueDate": "11-5-2026",
       "remarks": "Jerry Lee | Datum: 11-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1184",
@@ -1067,7 +1214,9 @@
       "issueDate": "10-5-2026",
       "remarks": "Jayden Lee | Datum: 10-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1185",
@@ -1078,7 +1227,9 @@
       "issueDate": "10-5-2026",
       "remarks": "Muddy Lee | Datum: 10-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1186",
@@ -1089,7 +1240,9 @@
       "issueDate": "10-5-2026",
       "remarks": "Joa Lee | Datum: 10-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1187",
@@ -1100,7 +1253,9 @@
       "issueDate": "10-5-2026",
       "remarks": "Nadir Bxois | Datum: 10-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1188",
@@ -1111,7 +1266,9 @@
       "issueDate": "9-5-2026",
       "remarks": "Dex Pieter | Datum: 9-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     },
     {
       "id": "lic-1189",
@@ -1122,7 +1279,9 @@
       "issueDate": "9-5-2026",
       "remarks": "James Ramirez | Datum: 9-5-2026 | Betaald factuur: 150.000 | Site bewerkt: ja",
       "taxPaid": true,
-      "employeeCommissionPaid": false
+      "employeeCommissionPaid": false,
+      "updatedAt": 1787490831644,
+      "managementFeePaid": false
     }
   ],
   "inventory": [
@@ -1212,6 +1371,13 @@
   },
   "staffAccounts": [
     {
+      "id": "u-1",
+      "username": "MikeL",
+      "passwordHash": "MikeLapose_eigenaar99!",
+      "role": "owner",
+      "fullname": "Mike Lapose"
+    },
+    {
       "username": "mike_cw",
       "role": "owner",
       "id": "discord-1057359480418996346",
@@ -1223,5 +1389,6 @@
     "Mike",
     "John",
     "Yahro"
-  ]
+  ],
+  "taxDueDate": 1788700431644
 }

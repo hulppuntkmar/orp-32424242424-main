@@ -1,8 +1,10 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import dotenv from "dotenv";
 import { GoogleGenAI, Type } from "@google/genai";
 import { createServer as createViteServer } from "vite";
+import { ensureUniqueLicenseId } from "./src/lib/licenseId";
 
 dotenv.config();
 
@@ -10,6 +12,336 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+// Persistent shared database file for Render & multi-user sync
+const DB_FILE = path.join(process.cwd(), "data", "db.json");
+const PORTAL_DATA_FILE = path.join(process.cwd(), "portal-data.json");
+
+const fallbackDb = {
+  issuedLicenses: [],
+  staffAccounts: [
+    { id: "u-1", username: "MikeL", passwordHash: "MikeLapose_eigenaar99!", role: "owner", fullname: "Mike Lapose" }
+  ],
+  managementMembers: ["Mike", "John", "Yahro"],
+  taxDueDate: Date.now() + 14 * 24 * 60 * 60 * 1000
+};
+
+// In-Memory Master DB State (Single Source of Truth)
+let dbState: any = null;
+let isSaving = false;
+let saveQueued = false;
+
+function sanitizeDb(data: any): any {
+  if (!data || typeof data !== "object") {
+    data = {};
+  }
+  if (!Array.isArray(data.issuedLicenses)) {
+    data.issuedLicenses = [];
+  }
+  // Filter out any diagnostic/test mock entries and ensure unique IDs
+  const seenIds = new Set<string>();
+  data.issuedLicenses = data.issuedLicenses
+    .filter((l: any) => l && l.id && l.id !== "lic-diagnostic-94713" && l.id !== "lic-test-unique-21262")
+    .map((l: any) => {
+      let safeId = l.id;
+      if (seenIds.has(safeId)) {
+        let nextNum = 7925;
+        while (seenIds.has(`lic-${nextNum}`)) {
+          nextNum++;
+        }
+        safeId = `lic-${nextNum}`;
+      }
+      seenIds.add(safeId);
+      return {
+        ...l,
+        id: safeId,
+        citizenName: l.citizenName || "Onbekend",
+        citizenId: l.citizenId || "BSN-00000000",
+        licenseType: l.licenseType || "small-plane",
+        issuedBy: l.issuedBy || "Directie",
+        issueDate: l.issueDate || new Date().toLocaleDateString("nl-NL"),
+        employeeCommissionPaid: !!l.employeeCommissionPaid,
+        taxPaid: !!l.taxPaid,
+        managementFeePaid: !!l.managementFeePaid,
+        updatedAt: l.updatedAt || Date.now()
+      };
+    });
+
+  if (!Array.isArray(data.staffAccounts) || data.staffAccounts.length === 0) {
+    data.staffAccounts = [...fallbackDb.staffAccounts];
+  } else {
+    // Ensure primary owner account exists
+    if (!data.staffAccounts.some((u: any) => u.username === "MikeL")) {
+      data.staffAccounts.unshift({
+        id: "u-1",
+        username: "MikeL",
+        passwordHash: "MikeLapose_eigenaar99!",
+        role: "owner",
+        fullname: "Mike Lapose"
+      });
+    }
+  }
+
+  if (!Array.isArray(data.managementMembers) || data.managementMembers.length === 0) {
+    data.managementMembers = ["Mike", "John", "Yahro"];
+  }
+
+  if (!data.taxDueDate || typeof data.taxDueDate !== "number") {
+    data.taxDueDate = Date.now() + 14 * 24 * 60 * 60 * 1000;
+  }
+
+  return data;
+}
+
+function initDb(): any {
+  try {
+    const dataDir = path.dirname(DB_FILE);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
+    if (fs.existsSync(DB_FILE)) {
+      try {
+        const raw = fs.readFileSync(DB_FILE, "utf-8");
+        const parsed = JSON.parse(raw);
+        return sanitizeDb(parsed);
+      } catch (err) {
+        console.error("Error reading db.json, trying portal-data.json fallback:", err);
+      }
+    }
+
+    if (fs.existsSync(PORTAL_DATA_FILE)) {
+      try {
+        const raw = fs.readFileSync(PORTAL_DATA_FILE, "utf-8");
+        const parsed = JSON.parse(raw);
+        return sanitizeDb(parsed);
+      } catch (err) {
+        console.error("Error reading portal-data.json:", err);
+      }
+    }
+  } catch (err) {
+    console.error("Critical error in initDb:", err);
+  }
+
+  return sanitizeDb({ ...fallbackDb });
+}
+
+// Initialize In-Memory database
+dbState = initDb();
+
+// Queued async disk write to prevent race conditions and Windows EPERM lock collisions
+function scheduleSaveDb() {
+  if (isSaving) {
+    saveQueued = true;
+    return;
+  }
+  isSaving = true;
+
+  setImmediate(() => {
+    try {
+      const dataDir = path.dirname(DB_FILE);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+
+      const payload = JSON.stringify(dbState, null, 2);
+
+      // Safe write to main DB_FILE
+      const tempFile = path.join(dataDir, `db.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 6)}`);
+      fs.writeFileSync(tempFile, payload, "utf-8");
+
+      try {
+        if (fs.existsSync(DB_FILE)) {
+          fs.copyFileSync(tempFile, DB_FILE);
+          try { fs.unlinkSync(tempFile); } catch {}
+        } else {
+          fs.renameSync(tempFile, DB_FILE);
+        }
+      } catch {
+        fs.writeFileSync(DB_FILE, payload, "utf-8");
+        try { if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile); } catch {}
+      }
+
+      // Safe backup to PORTAL_DATA_FILE
+      try {
+        fs.writeFileSync(PORTAL_DATA_FILE, payload, "utf-8");
+      } catch (err) {
+        console.error("Warning: could not write to portal-data.json:", err);
+      }
+    } catch (err) {
+      console.error("Error saving database to disk:", err);
+    } finally {
+      isSaving = false;
+      if (saveQueued) {
+        saveQueued = false;
+        scheduleSaveDb();
+      }
+    }
+  });
+}
+
+// Initial flush to ensure files on disk are clean and sanitized
+scheduleSaveDb();
+
+// -------------------------------------------------------------
+// Shared Data API for multi-user synchronization
+// -------------------------------------------------------------
+
+app.get("/api/shared-data", (req, res) => {
+  res.json(dbState);
+});
+
+app.post("/api/shared-data/license", (req, res) => {
+  const newLic = req.body;
+  if (!newLic || typeof newLic !== "object") {
+    return res.status(400).json({ error: "Ongeldige license data" });
+  }
+
+  const safeLicense = {
+    ...newLic,
+    id: ensureUniqueLicenseId(newLic.id, dbState.issuedLicenses),
+    updatedAt: Date.now()
+  };
+
+  const existsIndex = dbState.issuedLicenses.findIndex((l: any) => l.id === safeLicense.id);
+  if (existsIndex >= 0) {
+    dbState.issuedLicenses[existsIndex] = safeLicense;
+  } else {
+    dbState.issuedLicenses = [safeLicense, ...dbState.issuedLicenses];
+  }
+
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.put("/api/shared-data/license/:id", (req, res) => {
+  const { id } = req.params;
+  const updatedLic = req.body;
+  if (!updatedLic || typeof updatedLic !== "object") {
+    return res.status(400).json({ error: "Ongeldige license data" });
+  }
+
+  updatedLic.updatedAt = Date.now();
+
+  let found = false;
+  dbState.issuedLicenses = dbState.issuedLicenses.map((lic: any) => {
+    if (lic.id === id) {
+      found = true;
+      return { ...lic, ...updatedLic, id };
+    }
+    return lic;
+  });
+
+  if (!found) {
+    return res.status(404).json({ error: `License ${id} not found` });
+  }
+
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.delete("/api/shared-data/license/:id", (req, res) => {
+  const { id } = req.params;
+  dbState.issuedLicenses = dbState.issuedLicenses.filter((lic: any) => lic.id !== id);
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/licenses/batch", (req, res) => {
+  const { licenses } = req.body;
+  if (!Array.isArray(licenses)) {
+    return res.status(400).json({ error: "Ongeldige batch data" });
+  }
+
+  const updateMap = new Map<string, any>();
+  licenses.forEach((lic: any) => {
+    if (lic && lic.id) {
+      updateMap.set(lic.id, { ...lic, updatedAt: Date.now() });
+    }
+  });
+
+  dbState.issuedLicenses = dbState.issuedLicenses.map((lic: any) => {
+    if (updateMap.has(lic.id)) {
+      return { ...lic, ...updateMap.get(lic.id) };
+    }
+    return lic;
+  });
+
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/pay-taxes", (req, res) => {
+  const now = Date.now();
+  const nextDueDate = now + 14 * 24 * 60 * 60 * 1000;
+
+  dbState.issuedLicenses = dbState.issuedLicenses.map((lic: any) => {
+    if (!lic.taxPaid) {
+      return { ...lic, taxPaid: true, updatedAt: now };
+    }
+    return lic;
+  });
+
+  dbState.taxDueDate = nextDueDate;
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState, nextDueDate });
+});
+
+app.post("/api/shared-data/staff-account", (req, res) => {
+  const newAccount = req.body;
+  if (!newAccount || !newAccount.id) return res.status(400).json({ error: "Ongeldige account data" });
+
+  const existsIndex = dbState.staffAccounts.findIndex((a: any) => a.id === newAccount.id || a.username === newAccount.username);
+  if (existsIndex >= 0) {
+    dbState.staffAccounts[existsIndex] = { ...dbState.staffAccounts[existsIndex], ...newAccount };
+  } else {
+    dbState.staffAccounts = [...dbState.staffAccounts, newAccount];
+  }
+
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.delete("/api/shared-data/staff-account/:id", (req, res) => {
+  const { id } = req.params;
+  dbState.staffAccounts = dbState.staffAccounts.filter((acc: any) => acc.id !== id);
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/management-members", (req, res) => {
+  const { managementMembers } = req.body;
+  if (!Array.isArray(managementMembers)) return res.status(400).json({ error: "Ongeldige data" });
+
+  dbState.managementMembers = managementMembers;
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/tax-due-date", (req, res) => {
+  const { taxDueDate } = req.body;
+  dbState.taxDueDate = Number(taxDueDate) || (Date.now() + 14 * 24 * 60 * 60 * 1000);
+  scheduleSaveDb();
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/inventory", (req, res) => {
+  const { inventory } = req.body;
+  if (Array.isArray(inventory)) {
+    dbState.inventory = inventory;
+    scheduleSaveDb();
+  }
+  res.json({ success: true, db: dbState });
+});
+
+app.post("/api/shared-data/aircraft-list", (req, res) => {
+  const { aircraftList } = req.body;
+  if (Array.isArray(aircraftList)) {
+    dbState.aircraftList = aircraftList;
+    scheduleSaveDb();
+  }
+  res.json({ success: true, db: dbState });
+});
 
 // Initialize Gemini Client safely
 let ai: GoogleGenAI | null = null;

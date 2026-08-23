@@ -96,10 +96,16 @@ export interface IssuedLicense {
   citizenId: string; // CID / BSN
   licenseType: "helicopter" | "small-plane" | "large-plane";
   issuedBy: string; // Staff member who signed it off
+  issuedByDiscordId?: string;
   issueDate: string;
   remarks?: string;
   employeeCommissionPaid?: boolean;
   taxPaid?: boolean;
+  managementFeePaid?: boolean;
+  bonusAmount?: number;
+  bonusPaid?: boolean;
+  bonusNote?: string;
+  updatedAt?: number;
 }
 
 export interface AircraftInventory {
@@ -108,4 +114,3 @@ export interface AircraftInventory {
   status: "Op voorraad" | "Gereserveerd" | "Uitverkocht";
   priceOverride?: number;
 }
-

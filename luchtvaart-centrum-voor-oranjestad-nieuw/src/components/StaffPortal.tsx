@@ -11,6 +11,8 @@ interface StaffPortalProps {
   onAddLicense: (lic: IssuedLicense) => void;
   onRemoveLicense: (id: string) => void;
   onUpdateLicense: (lic: IssuedLicense) => void;
+  onPayTaxes?: () => Promise<any> | void;
+  onBatchUpdateLicenses?: (licenses: IssuedLicense[]) => Promise<any> | void;
   inventory: AircraftInventory[];
   onUpdateInventory: (updated: AircraftInventory[]) => void;
   aircraftList: Aircraft[];
@@ -29,6 +31,8 @@ export default function StaffPortal({
   onAddLicense, 
   onRemoveLicense,
   onUpdateLicense,
+  onPayTaxes,
+  onBatchUpdateLicenses,
   inventory, 
   onUpdateInventory,
   aircraftList,
@@ -94,20 +98,9 @@ export default function StaffPortal({
       accounts = [...DEFAULT_STAFF_ACCOUNTS];
     }
 
-    // Modern operational migration: ensure Eigenaar Mike Lapose is configured as the owner
-    const ownerIndex = accounts.findIndex(u => u.role === "owner");
-    if (ownerIndex !== -1) {
-      const owner = accounts[ownerIndex];
-      if (owner.username !== "MikeL" || owner.passwordHash !== "MikeLapose_eigenaar99!" || owner.fullname !== "Mike Lapose") {
-        accounts[ownerIndex] = {
-          ...owner,
-          username: "MikeL",
-          fullname: "Mike Lapose",
-          passwordHash: "MikeLapose_eigenaar99!"
-        };
-      }
-    } else {
-      accounts.push({
+    // Ensure default owner Mike Lapose is available
+    if (!accounts.some(u => u.username === "MikeL")) {
+      accounts.unshift({
         id: "u-1",
         username: "MikeL",
         fullname: "Mike Lapose",
@@ -126,6 +119,30 @@ export default function StaffPortal({
 
     setStaffAccounts(accounts);
     localStorage.setItem(STAFF_ACCOUNTS_KEY, JSON.stringify(accounts));
+  }, []);
+
+  // Live multi-user synchronization for staff accounts & taxes
+  const syncSharedDataInPortal = async () => {
+    try {
+      const res = await fetch("/api/shared-data");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.staffAccounts && Array.isArray(data.staffAccounts)) {
+          setStaffAccounts(data.staffAccounts);
+          localStorage.setItem(STAFF_ACCOUNTS_KEY, JSON.stringify(data.staffAccounts));
+        }
+        if (data.taxDueDate) {
+          setTaxDueDate(data.taxDueDate);
+          localStorage.setItem("@luchtvaart_oranjestad_tax_due_date", data.taxDueDate.toString());
+        }
+      }
+    } catch (e) {}
+  };
+
+  React.useEffect(() => {
+    syncSharedDataInPortal();
+    const interval = setInterval(syncSharedDataInPortal, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   // Check for Discord code inside URL or custom session on mount
@@ -382,6 +399,11 @@ export default function StaffPortal({
 
     const nextAccounts = [...staffAccounts, newUser];
     saveAccounts(nextAccounts);
+    fetch("/api/shared-data/staff-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser)
+    }).catch(() => {});
 
     setUserCreatedMessage(`Account voor '${cleanName}' met rol '${newUserRole}' is succesvol aangemaakt!`);
     setNewUsername("");
@@ -406,8 +428,12 @@ export default function StaffPortal({
 
   const confirmDeleteUser = () => {
     if (!deleteConfirmationUser) return;
-    const nextAccounts = staffAccounts.filter(u => u.id !== deleteConfirmationUser.id);
+    const delId = deleteConfirmationUser.id;
+    const nextAccounts = staffAccounts.filter(u => u.id !== delId);
     saveAccounts(nextAccounts);
+    fetch(`/api/shared-data/staff-account/${delId}`, {
+      method: "DELETE"
+    }).catch(() => {});
     setDeleteConfirmationUser(null);
   };
 
@@ -1021,15 +1047,21 @@ export default function StaffPortal({
             }
 
             const executeTaxPayment = () => {
-              // Set taxPaid = true for all licenses and trigger update
-              issuedLicenses.forEach(lic => {
-                if (!lic.taxPaid) {
-                  onUpdateLicense({
-                    ...lic,
-                    taxPaid: true
-                  });
-                }
-              });
+              if (onPayTaxes) {
+                onPayTaxes();
+              } else if (onBatchUpdateLicenses) {
+                const updated = issuedLicenses.map(lic => lic.taxPaid ? lic : { ...lic, taxPaid: true });
+                onBatchUpdateLicenses(updated);
+              } else {
+                issuedLicenses.forEach(lic => {
+                  if (!lic.taxPaid) {
+                    onUpdateLicense({
+                      ...lic,
+                      taxPaid: true
+                    });
+                  }
+                });
+              }
 
               // Reset tax countdown to 14 days from now
               const nextDueDate = Date.now() + 14 * 24 * 60 * 60 * 1000;

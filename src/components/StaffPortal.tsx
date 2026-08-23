@@ -12,6 +12,8 @@ interface StaffPortalProps {
   onAddLicense: (lic: IssuedLicense) => void;
   onRemoveLicense: (id: string) => void;
   onUpdateLicense: (lic: IssuedLicense) => void;
+  onPayTaxes?: () => Promise<any> | void;
+  onBatchUpdateLicenses?: (licenses: IssuedLicense[]) => Promise<any> | void;
   inventory: AircraftInventory[];
   onUpdateInventory: (updated: AircraftInventory[]) => void;
   aircraftList: Aircraft[];
@@ -30,6 +32,8 @@ export default function StaffPortal({
   onAddLicense, 
   onRemoveLicense,
   onUpdateLicense,
+  onPayTaxes,
+  onBatchUpdateLicenses,
   inventory, 
   onUpdateInventory,
   aircraftList,
@@ -197,20 +201,9 @@ export default function StaffPortal({
       accounts = [...DEFAULT_STAFF_ACCOUNTS];
     }
 
-    // Modern operational migration: ensure Eigenaar Mike Lapose is configured as the owner
-    const ownerIndex = accounts.findIndex(u => u.role === "owner");
-    if (ownerIndex !== -1) {
-      const owner = accounts[ownerIndex];
-      if (owner.username !== "MikeL" || owner.passwordHash !== "MikeLapose_eigenaar99!" || owner.fullname !== "Mike Lapose") {
-        accounts[ownerIndex] = {
-          ...owner,
-          username: "MikeL",
-          fullname: "Mike Lapose",
-          passwordHash: "MikeLapose_eigenaar99!"
-        };
-      }
-    } else {
-      accounts.push({
+    // Ensure default owner Mike Lapose is available
+    if (!accounts.some(u => u.username === "MikeL")) {
+      accounts.unshift({
         id: "u-1",
         username: "MikeL",
         fullname: "Mike Lapose",
@@ -1125,14 +1118,21 @@ export default function StaffPortal({
             }
 
             const executeTaxPayment = () => {
-              issuedLicenses.forEach(lic => {
-                if (!lic.taxPaid) {
-                  onUpdateLicense({
-                    ...lic,
-                    taxPaid: true
-                  });
-                }
-              });
+              if (onPayTaxes) {
+                onPayTaxes();
+              } else if (onBatchUpdateLicenses) {
+                const updated = issuedLicenses.map(lic => lic.taxPaid ? lic : { ...lic, taxPaid: true });
+                onBatchUpdateLicenses(updated);
+              } else {
+                issuedLicenses.forEach(lic => {
+                  if (!lic.taxPaid) {
+                    onUpdateLicense({
+                      ...lic,
+                      taxPaid: true
+                    });
+                  }
+                });
+              }
 
               const nextDueDate = Date.now() + 14 * 24 * 60 * 60 * 1000;
               setTaxDueDate(nextDueDate);
